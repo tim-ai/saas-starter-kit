@@ -13,16 +13,22 @@ const Members = ({ team }: { team: Team }) => {
   const { data: session } = useSession();
   const { t } = useTranslation('common');
 
-  const { isLoading, isError, members, mutateTeamMembers } = useTeamMembers(
+  const { isLoading, error, members, mutateTeamMembers } = useTeamMembers(
     team.slug
   );
+
+  console.log({ isLoading, error, members });
+
+  if (!session) {
+    return null;
+  }
 
   if (isLoading) {
     return <Loading />;
   }
 
-  if (isError || !session) {
-    return <Error />;
+  if (error) {
+    return <Error message={error.message} />;
   }
 
   if (!members) {

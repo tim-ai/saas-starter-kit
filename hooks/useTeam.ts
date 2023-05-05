@@ -1,19 +1,17 @@
 import fetcher from '@/lib/fetcher';
 import type { Team } from '@prisma/client';
 import useSWR from 'swr';
-import type { ApiResponse } from 'types';
+import type { ApiError, ApiResponse } from 'types';
 
 const useTeam = (slug: string | undefined) => {
-  const url = `/api/teams/${slug}`;
-
-  const { data, error, isLoading } = useSWR<ApiResponse<Team>>(
-    slug ? url : null,
+  const { data, error, isLoading } = useSWR<ApiResponse<Team>, ApiError>(
+    slug ? `/api/teams/${slug}` : null,
     fetcher
   );
 
   return {
     isLoading,
-    isError: error,
+    error,
     team: data?.data,
   };
 };

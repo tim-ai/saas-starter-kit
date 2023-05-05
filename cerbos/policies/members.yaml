@@ -2,7 +2,7 @@ apiVersion: api.cerbos.dev/v1
 
 resourcePolicy:
   version: default
-  resource: team
+  resource: members
   rules:
     - actions:
         - 'read'
@@ -23,11 +23,5 @@ resourcePolicy:
         - 'delete'
       effect: EFFECT_ALLOW
       roles:
-        - OWNER
-
-    - actions:
-        - 'leave'
-      effect: EFFECT_ALLOW
-      roles:
         - ADMIN
-        - MEMBER
+        - OWNER

@@ -15,19 +15,22 @@ import type { NextPageWithLayout } from 'types';
 
 const TeamMembers: NextPageWithLayout = () => {
   const router = useRouter();
+  const { slug } = router.query as { slug: string };
+
   const { t } = useTranslation('common');
-  const { slug } = router.query;
-
   const [visible, setVisible] = useState(false);
+  const { team, error, isLoading } = useTeam(slug);
 
-  const { isLoading, isError, team } = useTeam(slug as string);
-
-  if (isLoading || !team) {
+  if (isLoading) {
     return <Loading />;
   }
 
-  if (isError) {
-    return <Error />;
+  if (error) {
+    return <Error message={error.message} />;
+  }
+
+  if (!team) {
+    return null;
   }
 
   return (

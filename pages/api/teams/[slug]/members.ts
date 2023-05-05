@@ -1,14 +1,9 @@
+import { cerbos } from '@/lib/cerbos';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { sendEvent } from '@/lib/svix';
 import { Role } from '@prisma/client';
-import {
-  getTeam,
-  getTeamMembers,
-  isTeamAdmin,
-  isTeamMember,
-  removeTeamMember,
-} from 'models/team';
+import { getTeamMembers, getTeamWithRole, removeTeamMember } from 'models/team';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
@@ -17,20 +12,26 @@ export default async function handler(
 ) {
   const { method } = req;
 
-  switch (method) {
-    case 'GET':
-      return await handleGET(req, res);
-    case 'DELETE':
-      return await handleDELETE(req, res);
-    case 'PUT':
-      return await handlePUT(req, res);
-    case 'PATCH':
-      return await handlePATCH(req, res);
-    default:
-      res.setHeader('Allow', 'GET, DELETE, PUT, PATCH');
-      res.status(405).json({
-        error: { message: `Method ${method} Not Allowed` },
-      });
+  try {
+    switch (method) {
+      case 'GET':
+        return await handleGET(req, res);
+      case 'DELETE':
+        return await handleDELETE(req, res);
+      case 'PUT':
+        return await handlePUT(req, res);
+      case 'PATCH':
+        return await handlePATCH(req, res);
+      default:
+        res.setHeader('Allow', 'GET, DELETE, PUT, PATCH');
+        res.status(405).json({
+          error: { message: `Method ${method} Not Allowed` },
+        });
+    }
+  } catch (error: any) {
+    return res.status(400).json({
+      error: { message: error.message || 'Bad request.' },
+    });
   }
 }
 
@@ -41,23 +42,31 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(400).json({
-      error: { message: 'Bad request.' },
-    });
+    throw new Error('Unauthorized.');
   }
 
-  const userId = session.user.id;
-  const team = await getTeam({ slug });
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  if (!(await isTeamMember(userId, team.id))) {
-    return res.status(200).json({
-      error: { message: 'Bad request.' },
-    });
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'members',
+      id: teamWithRole.team.id,
+    },
+    action: 'read',
+  });
+
+  if (!isAllowed) {
+    throw new Error(`You don't have permission to do this action.`);
   }
 
-  const members = await getTeamMembers(slug);
-
-  return res.status(200).json({ data: members });
+  return res.json({
+    data: await getTeamMembers(slug),
+    error: null,
+  });
 };
 
 // Delete the member from the team
@@ -68,22 +77,30 @@ const handleDELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(400).json({
-      error: { message: 'Bad request.' },
-    });
+    throw new Error('Unauthorized.');
   }
 
-  const team = await getTeam({ slug });
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  if (!(await isTeamAdmin(session.user.id, team.id))) {
-    return res.status(400).json({
-      error: { message: 'You are not allowed to perform this action.' },
-    });
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'members',
+      id: teamWithRole.team.id,
+    },
+    action: 'delete',
+  });
+
+  if (!isAllowed) {
+    throw new Error(`You don't have permission to do this action.`);
   }
 
-  const teamMember = await removeTeamMember(team.id, memberId);
+  const teamMember = await removeTeamMember(teamWithRole.team.id, memberId);
 
-  await sendEvent(team.id, 'member.removed', teamMember);
+  await sendEvent(teamWithRole.team.id, 'member.removed', teamMember);
 
   return res.status(200).json({ data: {} });
 };
@@ -95,34 +112,28 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(400).json({
-      error: { message: 'Bad request.' },
-    });
+    throw new Error('Unauthorized.');
   }
 
-  const userId = session.user.id;
-  const team = await getTeam({ slug });
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  if (!(await isTeamMember(userId, team.id))) {
-    return res.status(400).json({
-      error: { message: 'Bad request.' },
-    });
-  }
-
-  const totalTeamOwners = await prisma.teamMember.count({
-    where: {
-      role: Role.OWNER,
-      teamId: team.id,
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
     },
+    resource: {
+      kind: 'team',
+      id: teamWithRole.team.id,
+    },
+    action: 'leave',
   });
 
-  if (totalTeamOwners <= 1) {
-    return res.status(400).json({
-      error: { message: 'A team should have at least one owner.' },
-    });
+  if (!isAllowed) {
+    throw new Error(`You don't have permission to do this action.`);
   }
 
-  await removeTeamMember(team.id, userId);
+  await removeTeamMember(teamWithRole.team.id, session.user.id);
 
   return res.status(200).json({ data: {} });
 };
@@ -135,24 +146,31 @@ const handlePATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(400).json({
-      error: { message: 'Bad request.' },
-    });
+    throw new Error('Unauthorized.');
   }
 
-  const userId = session.user.id;
-  const team = await getTeam({ slug });
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  if (!(await isTeamAdmin(userId, team.id))) {
-    return res.status(400).json({
-      error: { message: 'Bad request.' },
-    });
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'members',
+      id: teamWithRole.team.id,
+    },
+    action: 'update',
+  });
+
+  if (!isAllowed) {
+    throw new Error(`You don't have permission to do this action.`);
   }
 
   const memberUpdated = await prisma.teamMember.update({
     where: {
       teamId_userId: {
-        teamId: team.id,
+        teamId: teamWithRole.team.id,
         userId: memberId,
       },
     },
