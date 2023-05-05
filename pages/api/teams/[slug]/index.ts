@@ -63,20 +63,17 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
 
 // Update a team
 const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { slug } = req.query as { slug: string };
-
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(401).json({
-      data: null,
-      error: { message: 'Unauthorized.' },
-    });
+    throw new Error('Unauthorized.');
   }
+
+  const { slug } = req.query as { slug: string };
 
   const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  const isAllowed = await cerbos.isAllowed({
+  await throwIfNotAllowed({
     principal: {
       id: session.user.id,
       roles: [teamWithRole.role],
@@ -87,13 +84,6 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
     },
     action: 'update',
   });
-
-  if (!isAllowed) {
-    return res.status(400).json({
-      data: null,
-      error: { message: `You don't have permission to do this action.` },
-    });
-  }
 
   const updatedTeam = await updateTeam(slug, {
     name: req.body.name,
@@ -106,20 +96,17 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
 
 // Delete a team
 const handleDELETE = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { slug } = req.query as { slug: string };
-
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(401).json({
-      data: null,
-      error: { message: 'Unauthorized.' },
-    });
+    throw new Error('Unauthorized.');
   }
+
+  const { slug } = req.query as { slug: string };
 
   const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  const isAllowed = await cerbos.isAllowed({
+  await throwIfNotAllowed({
     principal: {
       id: session.user.id,
       roles: [teamWithRole.role],
@@ -130,13 +117,6 @@ const handleDELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     },
     action: 'delete',
   });
-
-  if (!isAllowed) {
-    return res.status(400).json({
-      data: null,
-      error: { message: `You don't have permission to do this action.` },
-    });
-  }
 
   await deleteTeam({ slug });
 

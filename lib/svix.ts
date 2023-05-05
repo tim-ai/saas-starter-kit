@@ -1,8 +1,16 @@
-import { EndpointIn, Svix } from 'svix';
+import { Svix } from 'svix';
+import type { EndpointIn } from 'svix';
 
 import env from './env';
 
 const svix = new Svix(env.svix.apiKey);
+
+const eventTypes = [
+  'invitations.created',
+  'invitations.deleted',
+  'members.created',
+  'members.deleted',
+] as const;
 
 export const findOrCreateApp = async (name: string, uid: string) => {
   return await svix.application.getOrCreate({ name, uid });
@@ -44,4 +52,16 @@ export const sendEvent = async (
       data: payload,
     },
   });
+};
+
+export const createEventTypes = async () => {
+  const promises = eventTypes.map((eventType) => {
+    console.log(`Creating event type: ${eventType}`);
+    return svix.eventType.create({
+      name: eventType,
+      description: eventType,
+    });
+  });
+
+  await Promise.all(promises);
 };
