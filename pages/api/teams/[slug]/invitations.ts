@@ -1,3 +1,4 @@
+import { throwIfNotAllowed } from '@/lib/cerbos';
 import { sendTeamInviteEmail } from '@/lib/email/sendTeamInviteEmail';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
@@ -8,7 +9,7 @@ import {
   getInvitation,
   getInvitations,
 } from 'models/invitation';
-import { addTeamMember, getTeam, isTeamAdmin } from 'models/team';
+import { addTeamMember, getTeamWithRole } from 'models/team';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
@@ -17,20 +18,26 @@ export default async function handler(
 ) {
   const { method } = req;
 
-  switch (method) {
-    case 'GET':
-      return await handleGET(req, res);
-    case 'POST':
-      return await handlePOST(req, res);
-    case 'PUT':
-      return await handlePUT(req, res);
-    case 'DELETE':
-      return await handleDELETE(req, res);
-    default:
-      res.setHeader('Allow', 'GET, POST, PUT, DELETE');
-      res.status(405).json({
-        error: { message: `Method ${method} Not Allowed` },
-      });
+  try {
+    switch (method) {
+      case 'GET':
+        return await handleGET(req, res);
+      case 'POST':
+        return await handlePOST(req, res);
+      case 'PUT':
+        return await handlePUT(req, res);
+      case 'DELETE':
+        return await handleDELETE(req, res);
+      default:
+        res.setHeader('Allow', 'GET, POST, PUT, DELETE');
+        res.status(405).json({
+          error: { message: `Method ${method} Not Allowed` },
+        });
+    }
+  } catch (error: any) {
+    return res.status(400).json({
+      error: { message: error.message || 'Bad request.' },
+    });
   }
 }
 
@@ -40,39 +47,46 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
   const { slug } = req.query as { slug: string };
 
   const session = await getSession(req, res);
-  const userId = session?.user?.id as string;
 
-  const team = await getTeam({ slug });
-
-  if (!(await isTeamAdmin(userId, team.id))) {
-    return res.status(400).json({
-      error: { message: 'Bad request.' },
-    });
+  if (!session) {
+    throw new Error('Unauthorized.');
   }
+
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
+
+  await throwIfNotAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'invitations',
+      id: teamWithRole.team.id,
+    },
+    action: 'create',
+  });
 
   const invitationExists = await prisma.invitation.findFirst({
     where: {
       email,
-      teamId: team.id,
+      teamId: teamWithRole.team.id,
     },
   });
 
   if (invitationExists) {
-    return res.status(400).json({
-      error: { message: 'An invitation already exists for this email.' },
-    });
+    throw new Error('An invitation already exists for this email.');
   }
 
   const invitation = await createInvitation({
-    teamId: team.id,
-    invitedBy: userId,
+    teamId: teamWithRole.team.id,
+    invitedBy: session.user.id,
     email,
     role,
   });
 
-  await sendEvent(team.id, 'invitation.created', invitation);
+  await sendEvent(teamWithRole.team.id, 'invitation.created', invitation);
 
-  await sendTeamInviteEmail(team, invitation);
+  await sendTeamInviteEmail(teamWithRole.team, invitation);
 
   return res.status(200).json({ data: invitation });
 };
@@ -82,17 +96,26 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
   const { slug } = req.query as { slug: string };
 
   const session = await getSession(req, res);
-  const userId = session?.user?.id as string;
 
-  const team = await getTeam({ slug });
-
-  if (!(await isTeamAdmin(userId, team?.id))) {
-    return res.status(400).json({
-      error: { message: 'Bad request.' },
-    });
+  if (!session) {
+    throw new Error('Unauthorized.');
   }
 
-  const invitations = await getInvitations(team.id);
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
+
+  await throwIfNotAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'invitations',
+      id: teamWithRole.team.id,
+    },
+    action: 'read',
+  });
+
+  const invitations = await getInvitations(teamWithRole.team.id);
 
   return res.status(200).json({ data: invitations });
 };
@@ -103,29 +126,33 @@ const handleDELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   const { slug } = req.query as { slug: string };
 
   const session = await getSession(req, res);
-  const userId = session?.user?.id as string;
 
-  const team = await getTeam({ slug });
-
-  if (!(await isTeamAdmin(userId, team?.id))) {
-    return res.status(400).json({
-      error: { message: 'Bad request.' },
-    });
+  if (!session) {
+    throw new Error('Unauthorized.');
   }
+
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
   const invitation = await getInvitation({ id });
 
-  if (invitation.invitedBy != userId || invitation.teamId != team.id) {
-    return res.status(400).json({
-      error: {
-        message: "You don't have permission to delete this invitation.",
+  await throwIfNotAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'invitations',
+      id: teamWithRole.team.id,
+      attributes: {
+        author: invitation.invitedBy,
       },
-    });
-  }
+    },
+    action: 'delete',
+  });
 
   await deleteInvitation({ id });
 
-  await sendEvent(team.id, 'invitation.removed', invitation);
+  await sendEvent(teamWithRole.team.id, 'invitation.removed', invitation);
 
   return res.status(200).json({ data: {} });
 };
@@ -135,13 +162,16 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
   const { inviteToken } = req.body as { inviteToken: string };
 
   const session = await getSession(req, res);
-  const userId = session?.user?.id as string;
+
+  if (!session) {
+    throw new Error('Unauthorized.');
+  }
 
   const invitation = await getInvitation({ token: inviteToken });
 
   const teamMember = await addTeamMember(
     invitation.team.id,
-    userId,
+    session.user.id,
     invitation.role
   );
 

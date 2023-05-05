@@ -17,14 +17,14 @@ const WebhookList: NextPageWithLayout = () => {
 
   const [visible, setVisible] = useState(false);
 
-  const { isLoading, isError, team } = useTeam(slug);
+  const { isLoading, error, team } = useTeam(slug);
 
   if (isLoading || !team) {
     return <Loading />;
   }
 
-  if (isError) {
-    return <Error />;
+  if (error) {
+    return <Error message={error.message} />;
   }
 
   return (

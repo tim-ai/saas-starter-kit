@@ -14,14 +14,14 @@ const AuditLogs: NextPageWithLayout = () => {
   const { slug } = router.query;
   const { t } = useTranslation('common');
 
-  const { isLoading, isError, team } = useTeam(slug as string);
+  const { isLoading, error, team } = useTeam(slug as string);
 
   if (isLoading || !team) {
     return <Loading />;
   }
 
-  if (isError) {
-    return <Error />;
+  if (error) {
+    return <Error message={error.message} />;
   }
 
   return (

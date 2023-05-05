@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import type { Prisma, Team } from '@prisma/client';
 
 export type ApiError = {
   code?: string;

@@ -20,7 +20,7 @@ const DirectorySync: NextPageWithLayout = () => {
   const { slug } = router.query as { slug: string };
 
   const [visible, setVisible] = useState(false);
-  const { isLoading, isError, team } = useTeam(slug);
+  const { isLoading, error, team } = useTeam(slug);
   const { directories } = useDirectory(slug);
   const { t } = useTranslation('common');
 
@@ -28,8 +28,8 @@ const DirectorySync: NextPageWithLayout = () => {
     return <Loading />;
   }
 
-  if (isError) {
-    return <Error />;
+  if (error) {
+    return <Error message={error.message} />;
   }
 
   const directory =

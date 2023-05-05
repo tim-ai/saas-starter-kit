@@ -38,13 +38,7 @@ export const getTeamWithRole = async (teamSlug: string, userId: string) => {
       userId,
     },
     select: {
-      team: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-        },
-      },
+      team: true,
       role: true,
     },
   });

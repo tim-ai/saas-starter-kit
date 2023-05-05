@@ -18,15 +18,15 @@ const TeamSSO: NextPageWithLayout = () => {
   const { slug } = router.query as { slug: string };
 
   const [visible, setVisible] = useState(false);
-  const { isLoading, isError, team } = useTeam(slug);
+  const { isLoading, error, team } = useTeam(slug);
   const { samlConfig } = useSAMLConfig(slug);
 
   if (isLoading || !team) {
     return <Loading />;
   }
 
-  if (isError) {
-    return <Error />;
+  if (error) {
+    return <Error message={error.message} />;
   }
 
   const connectionExists = samlConfig && 'idpMetadata' in samlConfig.config;

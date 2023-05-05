@@ -1,6 +1,5 @@
 import { Card, Error, LetterAvatar, Loading } from '@/components/ui';
 import { availableRoles } from '@/lib/roles';
-import { isTeamAdmin } from '@/lib/teams';
 import { Team, TeamMember } from '@prisma/client';
 import axios from 'axios';
 import useTeamMembers from 'hooks/useTeamMembers';
@@ -16,8 +15,6 @@ const Members = ({ team }: { team: Team }) => {
   const { isLoading, error, members, mutateTeamMembers } = useTeamMembers(
     team.slug
   );
-
-  console.log({ isLoading, error, members });
 
   if (!session) {
     return null;
@@ -47,16 +44,6 @@ const Members = ({ team }: { team: Team }) => {
     toast.success('Deleted the member successfully.');
   };
 
-  const isAdmin = isTeamAdmin(session.user, members);
-
-  const canUpdateRole = (member: TeamMember) => {
-    return session.user.id != member.userId && isAdmin;
-  };
-
-  const canRemoveMember = (member: TeamMember) => {
-    return session.user.id != member.userId && isAdmin;
-  };
-
   return (
     <Card heading="Team Members">
       <Card.Body>
@@ -72,11 +59,9 @@ const Members = ({ team }: { team: Team }) => {
               <th scope="col" className="px-6 py-3">
                 {t('role')}
               </th>
-              {isAdmin && (
-                <th scope="col" className="px-6 py-3">
-                  {t('action')}
-                </th>
-              )}
+              <th scope="col" className="px-6 py-3">
+                {t('action')}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -94,25 +79,24 @@ const Members = ({ team }: { team: Team }) => {
                   </td>
                   <td className="px-6 py-3">{member.user.email}</td>
                   <td className="px-6 py-3">
-                    {canUpdateRole(member) ? (
-                      <UpdateRoleDropdown team={team} member={member} />
+                    {member.userId === session.user.id ? (
+                      member.role
                     ) : (
-                      <span>{member.role}</span>
+                      <UpdateRoleDropdown team={team} member={member} />
                     )}
                   </td>
-                  {canRemoveMember(member) && (
-                    <td className="px-6 py-3">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          removeTeamMember(member);
-                        }}
-                      >
-                        {t('remove')}
-                      </Button>
-                    </td>
-                  )}
+                  <td className="px-6 py-3">
+                    <Button
+                      disabled={member.userId === session.user.id}
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        removeTeamMember(member);
+                      }}
+                    >
+                      {t('remove')}
+                    </Button>
+                  </td>
                 </tr>
               );
             })}
@@ -131,21 +115,26 @@ const UpdateRoleDropdown = ({
   member: TeamMember;
 }) => {
   const updateRole = async (member: TeamMember, role: string) => {
-    await axios.patch(`/api/teams/${team.slug}/members`, {
-      memberId: member.userId,
-      role,
-    });
+    try {
+      await axios.patch(`/api/teams/${team.slug}/members`, {
+        memberId: member.userId,
+        role,
+      });
 
-    toast.success('Updated the role successfully.');
+      toast.success('Updated the role successfully.');
+    } catch (error: any) {
+      toast.error(error.response.data.error.message);
+    }
   };
 
   return (
     <select
       className="rounded-md text-sm"
       onChange={(e) => updateRole(member, e.target.value)}
+      defaultValue={member.role}
     >
       {availableRoles.map((role) => (
-        <option value={role.id} key={role.id} selected={role.id == member.role}>
+        <option value={role.id} key={role.id}>
           {role.id}
         </option>
       ))}

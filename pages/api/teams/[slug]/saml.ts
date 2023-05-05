@@ -1,4 +1,4 @@
-import { cerbos } from '@/lib/cerbos';
+import { cerbos, throwIfNotAllowed } from '@/lib/cerbos';
 import env from '@/lib/env';
 import jackson from '@/lib/jackson';
 import { getSession } from '@/lib/session';
@@ -11,16 +11,22 @@ export default async function handler(
 ) {
   const { method } = req;
 
-  switch (method) {
-    case 'GET':
-      return await handleGET(req, res);
-    case 'POST':
-      return await handlePOST(req, res);
-    default:
-      res.setHeader('Allow', 'GET, POST');
-      res.status(405).json({
-        error: { message: `Method ${method} Not Allowed` },
-      });
+  try {
+    switch (method) {
+      case 'GET':
+        return await handleGET(req, res);
+      case 'POST':
+        return await handlePOST(req, res);
+      default:
+        res.setHeader('Allow', 'GET, POST');
+        res.status(405).json({
+          error: { message: `Method ${method} Not Allowed` },
+        });
+    }
+  } catch (error: any) {
+    return res.status(400).json({
+      error: { message: error.message || 'Bad request.' },
+    });
   }
 }
 
@@ -31,15 +37,12 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(401).json({
-      data: null,
-      error: { message: 'Unauthorized.' },
-    });
+    throw new Error('Unauthorized.');
   }
 
   const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  const isAllowed = await cerbos.isAllowed({
+  await throwIfNotAllowed({
     principal: {
       id: session.user.id,
       roles: [teamWithRole.role],
@@ -50,13 +53,6 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
     },
     action: 'read',
   });
-
-  if (!isAllowed) {
-    return res.status(400).json({
-      data: null,
-      error: { message: `You don't have permission to do this action.` },
-    });
-  }
 
   const { apiController } = await jackson();
 
@@ -88,15 +84,12 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(401).json({
-      data: null,
-      error: { message: 'Unauthorized.' },
-    });
+    throw new Error('Unauthorized.');
   }
 
   const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  const isAllowed = await cerbos.isAllowed({
+  await throwIfNotAllowed({
     principal: {
       id: session.user.id,
       roles: [teamWithRole.role],
@@ -107,13 +100,6 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     },
     action: 'create',
   });
-
-  if (!isAllowed) {
-    return res.status(400).json({
-      data: null,
-      error: { message: `You don't have permission to do this action.` },
-    });
-  }
 
   const { apiController } = await jackson();
 

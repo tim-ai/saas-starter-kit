@@ -1,4 +1,4 @@
-import { cerbos } from '@/lib/cerbos';
+import { cerbos, throwIfNotAllowed } from '@/lib/cerbos';
 import { getSession } from '@/lib/session';
 import { deleteTeam, getTeam, getTeamWithRole, updateTeam } from 'models/team';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -9,19 +9,25 @@ export default async function handler(
 ) {
   const { method } = req;
 
-  switch (method) {
-    case 'GET':
-      return handleGET(req, res);
-    case 'PUT':
-      return handlePUT(req, res);
-    case 'DELETE':
-      return handleDELETE(req, res);
-    default:
-      res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-      res.status(405).json({
-        data: null,
-        error: { message: `Method ${method} Not Allowed` },
-      });
+  try {
+    switch (method) {
+      case 'GET':
+        return await handleGET(req, res);
+      case 'PUT':
+        return await handlePUT(req, res);
+      case 'DELETE':
+        return await handleDELETE(req, res);
+      default:
+        res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
+        res.status(405).json({
+          data: null,
+          error: { message: `Method ${method} Not Allowed` },
+        });
+    }
+  } catch (error: any) {
+    return res.status(400).json({
+      error: { message: error.message || 'Something went wrong.' },
+    });
   }
 }
 
@@ -32,15 +38,12 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(401).json({
-      data: null,
-      error: { message: 'Unauthorized.' },
-    });
+    throw new Error('Unauthorized.');
   }
 
   const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  const isAllowed = await cerbos.isAllowed({
+  await throwIfNotAllowed({
     principal: {
       id: session.user.id,
       roles: [teamWithRole.role],
@@ -52,16 +55,10 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
     action: 'read',
   });
 
-  if (!isAllowed) {
-    return res.status(400).json({
-      data: null,
-      error: { message: `You don't have permission to do this action.` },
-    });
-  }
-
-  const team = await getTeam({ slug });
-
-  return res.status(200).json({ data: team, error: null });
+  return res.json({
+    data: await getTeam({ slug }),
+    error: null,
+  });
 };
 
 // Update a team
