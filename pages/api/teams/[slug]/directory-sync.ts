@@ -1,7 +1,8 @@
+import { cerbos } from '@/lib/cerbos';
 import env from '@/lib/env';
 import jackson from '@/lib/jackson';
 import { getSession } from '@/lib/session';
-import { getTeam, isTeamMember } from 'models/team';
+import { getTeamWithRole } from 'models/team';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
@@ -29,55 +30,85 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
 
   if (!session) {
-    return res.status(401).json({ error: { message: 'Unauthorized' } });
+    return res.status(401).json({
+      data: null,
+      error: { message: 'Unauthorized.' },
+    });
   }
 
-  const team = await getTeam({ slug });
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  if (!(await isTeamMember(session.user.id, team?.id))) {
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'dsync',
+      id: teamWithRole.team.id,
+    },
+    action: 'read',
+  });
+
+  if (!isAllowed) {
     return res.status(400).json({
-      error: { message: 'Bad request.' },
+      data: null,
+      error: { message: `You don't have permission to do this action.` },
     });
   }
 
   const { directorySync } = await jackson();
 
   const { data, error } = await directorySync.directories.getByTenantAndProduct(
-    team.id,
+    teamWithRole.team.id,
     env.product
   );
 
-  if (error) {
-    return res.status(400).json({ error });
-  }
-
-  return res.status(200).json({ data });
+  return res.status(error ? 400 : 200).json({ data, error });
 };
 
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
   const { name, provider } = req.body;
-  const { slug } = req.query;
-
-  const { directorySync } = await jackson();
+  const { slug } = req.query as { slug: string };
 
   const session = await getSession(req, res);
-  const userId = session?.user?.id as string;
 
-  const team = await getTeam({ slug: slug as string });
-
-  if (!(await isTeamMember(userId, team?.id))) {
-    return res.status(400).json({
+  if (!session) {
+    return res.status(401).json({
       data: null,
-      error: { message: 'Bad request.' },
+      error: { message: 'Unauthorized.' },
     });
   }
+
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
+
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'dsync',
+      id: teamWithRole.team.id,
+    },
+    action: 'create',
+  });
+
+  if (!isAllowed) {
+    return res.status(400).json({
+      data: null,
+      error: { message: `You don't have permission to do this action.` },
+    });
+  }
+
+  const { directorySync } = await jackson();
 
   const { data, error } = await directorySync.directories.create({
     name,
     type: provider,
-    tenant: team.id,
+    tenant: teamWithRole.team.id,
     product: env.product,
   });
 
-  return res.status(201).json({ data, error });
+  return res.status(error ? 400 : 201).json({ data, error });
 };

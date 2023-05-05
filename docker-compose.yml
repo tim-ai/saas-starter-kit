@@ -1,11 +1,34 @@
 version: '3'
+
 services:
-  db:
+  # Postgres
+  postgres:
     image: postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: admin
-      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
       POSTGRES_DB: saas-starter-kit
     ports:
       - 5432:5432
+    networks:
+      - saas-kit
+
+  # Cerbos
+  cerbos:
+    image: ghcr.io/cerbos/cerbos:0.24.0
+    ports:
+      - 3592:3592
+      - 3593:3593
+    volumes:
+      - ./cerbos/config:/config
+      - ./cerbos/policies:/policies
+    command: server --config=/config/conf.yaml
+    networks:
+      - saas-kit
+
+networks:
+  saas-kit:
+
+volumes:
+  db_data:

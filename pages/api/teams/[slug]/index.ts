@@ -1,11 +1,6 @@
+import { cerbos } from '@/lib/cerbos';
 import { getSession } from '@/lib/session';
-import {
-  deleteTeam,
-  getTeam,
-  isTeamMember,
-  isTeamOwner,
-  updateTeam,
-} from 'models/team';
+import { deleteTeam, getTeam, getTeamWithRole, updateTeam } from 'models/team';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
@@ -32,40 +27,78 @@ export default async function handler(
 
 // Get a team by slug
 const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { slug } = req.query;
+  const { slug } = req.query as { slug: string };
 
   const session = await getSession(req, res);
-  const userId = session?.user?.id as string;
 
-  const team = await getTeam({ slug: slug as string });
-
-  if (!(await isTeamMember(userId, team.id))) {
-    return res.status(400).json({
+  if (!session) {
+    return res.status(401).json({
       data: null,
-      error: { message: 'Bad request.' },
+      error: { message: 'Unauthorized.' },
     });
   }
 
-  return res.status(200).json({ data: team, error: null });
-};
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-// Update a team
-const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { slug } = req.query;
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'team',
+      id: teamWithRole.team.id,
+    },
+    action: 'read',
+  });
 
-  const session = await getSession(req, res);
-  const userId = session?.user?.id as string;
-
-  const team = await getTeam({ slug: slug as string });
-
-  if (!(await isTeamOwner(userId, team.id))) {
+  if (!isAllowed) {
     return res.status(400).json({
       data: null,
       error: { message: `You don't have permission to do this action.` },
     });
   }
 
-  const updatedTeam = await updateTeam(slug as string, {
+  const team = await getTeam({ slug });
+
+  return res.status(200).json({ data: team, error: null });
+};
+
+// Update a team
+const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { slug } = req.query as { slug: string };
+
+  const session = await getSession(req, res);
+
+  if (!session) {
+    return res.status(401).json({
+      data: null,
+      error: { message: 'Unauthorized.' },
+    });
+  }
+
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
+
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'team',
+      id: teamWithRole.team.id,
+    },
+    action: 'update',
+  });
+
+  if (!isAllowed) {
+    return res.status(400).json({
+      data: null,
+      error: { message: `You don't have permission to do this action.` },
+    });
+  }
+
+  const updatedTeam = await updateTeam(slug, {
     name: req.body.name,
     slug: req.body.slug,
     domain: req.body.domain,
@@ -76,15 +109,33 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
 
 // Delete a team
 const handleDELETE = async (req: NextApiRequest, res: NextApiResponse) => {
-  const slug = req.query.slug as string;
+  const { slug } = req.query as { slug: string };
 
   const session = await getSession(req, res);
-  const userId = session?.user?.id as string;
 
-  const team = await getTeam({ slug });
+  if (!session) {
+    return res.status(401).json({
+      data: null,
+      error: { message: 'Unauthorized.' },
+    });
+  }
 
-  if (!(await isTeamOwner(userId, team.id))) {
-    return res.status(200).json({
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
+
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'team',
+      id: teamWithRole.team.id,
+    },
+    action: 'delete',
+  });
+
+  if (!isAllowed) {
+    return res.status(400).json({
       data: null,
       error: { message: `You don't have permission to do this action.` },
     });

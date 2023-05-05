@@ -29,6 +29,27 @@ export const getTeam = async (key: { id: string } | { slug: string }) => {
   });
 };
 
+export const getTeamWithRole = async (teamSlug: string, userId: string) => {
+  return await prisma.teamMember.findFirstOrThrow({
+    where: {
+      team: {
+        slug: teamSlug,
+      },
+      userId,
+    },
+    select: {
+      team: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      role: true,
+    },
+  });
+};
+
 export const deleteTeam = async (key: { id: string } | { slug: string }) => {
   return await prisma.team.delete({
     where: key,

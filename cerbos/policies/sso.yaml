@@ -1,0 +1,33 @@
+apiVersion: api.cerbos.dev/v1
+
+resourcePolicy:
+  version: default
+  resource: sso
+  rules:
+    - actions:
+        - 'create'
+      effect: EFFECT_ALLOW
+      roles:
+        - ADMIN
+        - OWNER
+
+    - actions:
+        - 'read'
+      effect: EFFECT_ALLOW
+      roles:
+        - ADMIN
+        - OWNER
+
+    - actions:
+        - 'update'
+      effect: EFFECT_ALLOW
+      roles:
+        - ADMIN
+        - OWNER
+
+    - actions:
+        - 'delete'
+      effect: EFFECT_ALLOW
+      roles:
+        - ADMIN
+        - OWNER

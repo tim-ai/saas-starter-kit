@@ -1,0 +1,26 @@
+apiVersion: api.cerbos.dev/v1
+
+resourcePolicy:
+  version: default
+  resource: team
+  rules:
+    - actions:
+        - 'read'
+      effect: EFFECT_ALLOW
+      roles:
+        - ADMIN
+        - OWNER
+        - MEMBER
+
+    - actions:
+        - 'update'
+      effect: EFFECT_ALLOW
+      roles:
+        - ADMIN
+        - OWNER
+
+    - actions:
+        - 'delete'
+      effect: EFFECT_ALLOW
+      roles:
+        - OWNER

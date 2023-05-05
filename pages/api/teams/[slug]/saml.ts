@@ -1,7 +1,8 @@
+import { cerbos } from '@/lib/cerbos';
 import env from '@/lib/env';
 import jackson from '@/lib/jackson';
 import { getSession } from '@/lib/session';
-import { getTeam, isTeamMember } from 'models/team';
+import { getTeamWithRole } from 'models/team';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
@@ -31,15 +32,29 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (!session) {
     return res.status(401).json({
+      data: null,
       error: { message: 'Unauthorized.' },
     });
   }
 
-  const team = await getTeam({ slug });
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  if (!(await isTeamMember(session.user.id, team.id))) {
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'sso',
+      id: teamWithRole.team.id,
+    },
+    action: 'read',
+  });
+
+  if (!isAllowed) {
     return res.status(400).json({
-      error: { message: 'Bad request.' },
+      data: null,
+      error: { message: `You don't have permission to do this action.` },
     });
   }
 
@@ -47,7 +62,7 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const connections = await apiController.getConnections({
-      tenant: team.id,
+      tenant: teamWithRole.team.id,
       product: env.product,
     });
 
@@ -74,15 +89,29 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (!session) {
     return res.status(401).json({
+      data: null,
       error: { message: 'Unauthorized.' },
     });
   }
 
-  const team = await getTeam({ slug });
+  const teamWithRole = await getTeamWithRole(slug, session.user.id);
 
-  if (!(await isTeamMember(session.user.id, team.id))) {
+  const isAllowed = await cerbos.isAllowed({
+    principal: {
+      id: session.user.id,
+      roles: [teamWithRole.role],
+    },
+    resource: {
+      kind: 'sso',
+      id: teamWithRole.team.id,
+    },
+    action: 'create',
+  });
+
+  if (!isAllowed) {
     return res.status(400).json({
-      error: { message: 'Bad request.' },
+      data: null,
+      error: { message: `You don't have permission to do this action.` },
     });
   }
 
@@ -93,7 +122,7 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
       encodedRawMetadata,
       defaultRedirectUrl: env.saml.callback,
       redirectUrl: env.saml.callback,
-      tenant: team.id,
+      tenant: teamWithRole.team.id,
       product: env.product,
     });
 
