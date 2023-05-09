@@ -1,4 +1,5 @@
-import { cerbos, throwIfNotAllowed } from '@/lib/cerbos';
+import { throwIfNotAllowed } from '@/lib/cerbos';
+import { sendAudit } from '@/lib/retraced';
 import { getSession } from '@/lib/session';
 import { deleteTeam, getTeam, getTeamWithRole, updateTeam } from 'models/team';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -91,6 +92,13 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
     domain: req.body.domain,
   });
 
+  sendAudit({
+    action: 'team.update',
+    crud: 'u',
+    user: session.user,
+    team: teamWithRole.team,
+  });
+
   return res.status(200).json({ data: updatedTeam, error: null });
 };
 
@@ -119,6 +127,13 @@ const handleDELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   });
 
   await deleteTeam({ slug });
+
+  sendAudit({
+    action: 'team.delete',
+    crud: 'd',
+    user: session.user,
+    team: teamWithRole.team,
+  });
 
   return res.status(200).json({ data: {}, error: null });
 };

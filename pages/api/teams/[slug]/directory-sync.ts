@@ -1,6 +1,7 @@
-import { cerbos, throwIfNotAllowed } from '@/lib/cerbos';
+import { throwIfNotAllowed } from '@/lib/cerbos';
 import env from '@/lib/env';
 import jackson from '@/lib/jackson';
+import { sendAudit } from '@/lib/retraced';
 import { getSession } from '@/lib/session';
 import { getTeamWithRole } from 'models/team';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -95,6 +96,15 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     tenant: teamWithRole.team.id,
     product: env.product,
   });
+
+  if (data) {
+    sendAudit({
+      action: 'dsync.connection.create',
+      crud: 'c',
+      user: session.user,
+      team: teamWithRole.team,
+    });
+  }
 
   return res.status(error ? 400 : 201).json({ data, error });
 };

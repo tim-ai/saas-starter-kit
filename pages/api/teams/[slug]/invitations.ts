@@ -1,6 +1,7 @@
 import { throwIfNotAllowed } from '@/lib/cerbos';
 import { sendTeamInviteEmail } from '@/lib/email/sendTeamInviteEmail';
 import { prisma } from '@/lib/prisma';
+import { sendAudit } from '@/lib/retraced';
 import { getSession } from '@/lib/session';
 import { sendEvent } from '@/lib/svix';
 import {
@@ -88,6 +89,13 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   await sendTeamInviteEmail(teamWithRole.team, invitation);
 
+  sendAudit({
+    action: 'member.invitation.create',
+    crud: 'c',
+    user: session.user,
+    team: teamWithRole.team,
+  });
+
   return res.status(200).json({ data: invitation });
 };
 
@@ -153,6 +161,13 @@ const handleDELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   await deleteInvitation({ id });
 
   await sendEvent(teamWithRole.team.id, 'invitation.removed', invitation);
+
+  sendAudit({
+    action: 'member.invitation.delete',
+    crud: 'd',
+    user: session.user,
+    team: teamWithRole.team,
+  });
 
   return res.status(200).json({ data: {} });
 };

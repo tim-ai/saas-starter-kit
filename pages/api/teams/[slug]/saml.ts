@@ -1,6 +1,7 @@
 import { cerbos, throwIfNotAllowed } from '@/lib/cerbos';
 import env from '@/lib/env';
 import jackson from '@/lib/jackson';
+import { sendAudit } from '@/lib/retraced';
 import { getSession } from '@/lib/session';
 import { getTeamWithRole } from 'models/team';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -110,6 +111,13 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
       redirectUrl: env.saml.callback,
       tenant: teamWithRole.team.id,
       product: env.product,
+    });
+
+    sendAudit({
+      action: 'sso.connection.create',
+      crud: 'c',
+      user: session.user,
+      team,
     });
 
     return res.status(201).json({ data: connection });
