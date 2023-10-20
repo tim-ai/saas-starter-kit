@@ -59,7 +59,7 @@ const env = {
 
   // Mixpanel configuration
   mixpanel: {
-    token: process.env.NEXT_PUBLIC_MIXPANEL_TOKEN,
+    token: process.env.MIXPANEL_TOKEN,
   },
 
   disableNonBusinessEmailSignup:

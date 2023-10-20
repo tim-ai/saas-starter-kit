@@ -11,16 +11,20 @@ import mixpanel from 'mixpanel-browser';
 import '@boxyhq/react-ui/dist/style.css';
 import '../styles/globals.css';
 import { useEffect } from 'react';
-import env from '@/lib/env';
+// import env from '@/lib/env';
 import { Theme, applyTheme } from '@/lib/theme';
 import { Themer } from '@boxyhq/react-ui/shared';
+import useEnv from 'hooks/useEnv';
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const { session, ...props } = pageProps;
+  const { env } = useEnv();
 
   // Add mixpanel
   useEffect(() => {
-    if (env.mixpanel.token) {
+    console.log("Inside use effect")
+    if (env?.mixpanel.token) {
+      console.log('Mixpanel enabled');
       mixpanel.init(env.mixpanel.token, {
         debug: true,
         ignore_dnt: true,
@@ -28,10 +32,10 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       });
     }
 
-    if (env.darkModeEnabled) {
-      applyTheme(localStorage.getItem('theme') as Theme);
-    }
-  }, []);
+    // if (env.darkModeEnabled) {
+    //   applyTheme(localStorage.getItem('theme') as Theme);
+    // }
+  }, [env]);
 
   const getLayout =
     Component.getLayout || ((page) => <AccountLayout>{page}</AccountLayout>);
