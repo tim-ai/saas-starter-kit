@@ -1,0 +1,323 @@
+/* Container and header styles */
+.container {
+  @apply p-8 w-full mx-auto;
+  margin-left: -200px;
+  width: 130%;
+  padding-right: 360px; /* leave space for the fixed saved section */
+}
+
+.title {
+  @apply text-center text-gray-800 mb-8 text-5xl font-bold;
+  flex-grow: 1;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Error message */
+.errorMessage {
+  @apply p-4 my-8 mx-auto bg-red-100 text-red-600 border border-red-300 rounded text-center;
+  max-width: 80%; /* Tailwind doesn’t include a percentage value by default */
+}
+
+/* Search styles */
+.searchContainer {
+  @apply w-full mx-auto mb-8 relative;
+}
+
+.searchInput {
+  @apply w-full p-4 border-2 border-gray-300 rounded text-base transition-colors duration-300 ease-in-out;
+}
+
+.searchInput:focus {
+  @apply outline-none border-blue-500;
+}
+
+.searchButton {
+  @apply absolute right-2 top-2 py-3 px-6 bg-blue-500 text-white border-0 rounded-md cursor-pointer transition-colors duration-300 ease-in-out;
+}
+
+.searchButton:disabled {
+  @apply bg-gray-400 cursor-not-allowed;
+}
+
+/* Dashboard and section cards */
+.dashboard {
+  @apply w-full mt-8 scroll-smooth overflow-y-auto p-4 bg-gray-50 rounded;
+  max-height: 70vh; /* custom value */
+  overflow-anchor: none;
+}
+
+/* Saved nitpicks section */
+.savedSection {
+  position: fixed;
+  top: 100px;               /* adjust as needed */
+  right: 80px;              /* adjust as needed */
+  background-color: #f7f7f7;  /* light gray background */
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 320px;
+  max-height: calc(100vh - 120px); /* allow scrolling if content is too tall */
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.savedTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+/* Map and property card layout */
+.mapWrapper {
+  @apply grid gap-8;
+  grid-template-columns: 1fr;
+  transition: all 0.3s ease-in-out;
+}
+
+.propertyCardContainer {
+  @apply grid gap-8;
+  grid-template-columns: 1fr;
+  transition: all 0.3s ease-in-out;
+}
+
+.mapWrapper.expanded {
+  grid-template-columns: 1fr 1fr;
+}
+
+.mapWrapper.expanded .propertyCardContainer {
+  @apply opacity-100 translate-x-0;
+}
+
+.section {
+  @apply w-[95%] bg-white rounded-3xl p-8 shadow-md mb-8;
+}
+
+.sectionTitle {
+  @apply text-gray-800 mb-6 text-xl font-semibold;
+}
+
+/* Issues grid and cards */
+.issuesGrid {
+  @apply grid gap-6;
+  grid-template-columns: minmax(100%, 1fr); /* custom rule */
+}
+
+.issueCard {
+  @apply bg-white rounded-lg p-5 border border-gray-200 transition-all duration-200 ease-in-out;
+}
+
+.issueCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+.highlightedCard {
+  @apply border-blue-500 bg-gray-50;
+}
+
+/* Card header and severity indicator */
+.cardHeader {
+  @apply flex justify-between items-center mb-4;
+}
+
+.severityIndicator {
+  @apply text-sm font-semibold px-2 py-1 rounded;
+}
+
+.highSeverity {
+  @apply bg-red-50 text-red-600;
+}
+
+.mediumSeverity {
+  @apply bg-yellow-50 text-yellow-600;
+}
+
+.lowSeverity {
+  @apply bg-green-50 text-green-600;
+}
+
+/* Problem title and detail grid */
+.problemTitle {
+  @apply text-gray-900 text-base mb-3;
+}
+
+.detailGrid {
+  @apply grid gap-3;
+}
+
+.detailItem {
+  @apply flex flex-col;
+}
+
+.detailLabel {
+  @apply text-sm text-gray-500 mb-1;
+}
+
+.detailValue {
+  @apply text-sm text-gray-900 font-medium;
+}
+
+/* Thumb button */
+.thumbButton {
+  @apply bg-none border-0 p-1 cursor-pointer transition-transform duration-200 ease-in-out;
+}
+
+.thumbButton:hover {
+  @apply scale-110;
+}
+
+/* Data row */
+.dataRow {
+  @apply flex justify-between mb-2 py-2 border-b border-gray-200;
+}
+
+.dataLabel {
+  @apply text-gray-600 font-medium;
+}
+
+.dataValue {
+  @apply text-gray-800 font-semibold;
+}
+
+/* App container */
+.App,
+.app {
+  @apply flex flex-col min-h-screen;
+}
+
+/* Search header */
+.searchHeader {
+  @apply p-5 bg-gray-100 shadow-sm;
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.searchHeader form {
+  @apply flex max-w-3xl mx-auto;
+}
+
+.searchHeader input {
+  @apply flex-1 p-3 border border-gray-300 rounded mr-2 text-base;
+}
+
+.searchHeader button {
+  @apply p-3 px-6 bg-blue-500 text-white border-0 rounded cursor-pointer transition-colors duration-300 ease-in-out;
+}
+
+.searchHeader button:hover {
+  @apply bg-blue-700;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: gray;
+  font-size: 20px;
+  margin-right: 12px;
+}
+
+/* Map container uses grid */
+.mapContainer {
+  @apply grid w-full h-full mt-8 scroll-smooth  p-4 bg-[#f8fafc] rounded-lg;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+/* When two columns are required */
+.mapContainer[data-columns="2"] {
+  grid-template-columns: repeat(2, 1fr);
+  align-items: stretch;
+}
+
+/* Ensure both columns have the same fixed height */
+.mapWrapper,
+.propertyCardContainer {
+  height: 500px; /* Must match the height in your mapContainerStyle */
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.listingsGrid {
+  @apply relative grid  bg-gray-100;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* custom rule */
+}
+
+.propertyCard {
+  @apply h-full bg-white rounded shadow;
+}
+
+.propertyCard img {
+  @apply w-full object-cover;
+}
+
+.propertyDetails {
+  @apply p-4;
+}
+
+.price {
+  @apply text-blue-500 text-xl font-bold my-2;
+}
+
+.specs {
+  @apply flex justify-between text-gray-600;
+}
+
+/* Marker styles */
+.marker {
+  @apply relative text-red-500 text-center p-2 rounded-full flex flex-col items-center justify-center shadow;
+}
+
+.markerIcon {
+  @apply text-2xl filter drop-shadow;
+}
+
+.marker span {
+  @apply absolute bottom-[-5px] left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-bold text-white drop-shadow;
+}
+
+/* Marker animations and interactions */
+.dropIn {
+  animation: markerDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes markerDrop {
+  0% {
+    transform: translateY(-40px) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.markerHover {
+  transform: scale(1.3) !important;
+  z-index: 1;
+}
+
+.priceLabel {
+  @apply text-white font-bold text-xs drop-shadow;
+  margin-top: 4px;
+}
+
+.tooltip {
+  @apply absolute bottom-full left-1/2 -translate-x-1/2 bg-black bg-opacity-90 text-white px-3 py-1 rounded text-sm whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-200;
+}
+
+.marker:hover .tooltip {
+  @apply opacity-100;
+}
+.gm-style-iw {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}

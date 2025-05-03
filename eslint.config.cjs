@@ -25,7 +25,7 @@ module.exports = [{
     "plugin:@typescript-eslint/recommended",
     "prettier",
     "next/core-web-vitals",
-    "plugin:i18next/recommended",
+    //"plugin:i18next/recommended",
 ), {
     plugins: {
         "@typescript-eslint": typescriptEslint,

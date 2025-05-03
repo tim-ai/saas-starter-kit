@@ -7,12 +7,15 @@ const Brand = () => {
   return (
     <div className="flex pt-6 shrink-0 items-center text-xl font-bold gap-2 dark:text-gray-100">
       <Image
-        src={theme !== 'dark' ? app.logoUrl : '/logowhite.png'}
+        src={theme !== 'dark' ? app.logoUrl : '/logo.jpg'}
         alt={app.name}
-        width={30}
-        height={30}
+        
+        width={120}
+        height={80}
+        style={{ objectFit: 'fill' }}
+
       />
-      {app.name}
+      
     </div>
   );
 };

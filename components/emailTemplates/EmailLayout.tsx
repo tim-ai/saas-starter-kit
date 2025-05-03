@@ -31,7 +31,7 @@ const EmailLayout = ({ children }: EmailLayoutProps) => {
         <Container className="border border-solid bg-white border-[#f0f0f0] rounded my-[40px] mx-auto p-[20px] w-[465px]">
           <Img
             src={app.logoUrl}
-            width="50"
+            // width="50"
             height="50"
             alt={app.name}
             className="my-8 mx-auto"

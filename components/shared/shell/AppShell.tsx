@@ -4,25 +4,27 @@ import { useSession } from 'next-auth/react';
 import React from 'react';
 import Header from './Header';
 import Drawer from './Drawer';
-import { useRouter } from 'next/navigation';
+//import { useRouter } from 'next/navigation';
 
 export default function AppShell({ children }) {
-  const router = useRouter();
+  // const router = useRouter();
   const { status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   if (status === 'loading') {
     return <Loading />;
   }
 
-  if (status === 'unauthenticated') {
-    router.push('/auth/login');
-    return;
-  }
+  // if (status === 'unauthenticated') {
+  //   router.push('/auth/login');
+  //   return;
+  // }
+  // const isGuest = status === 'unauthenticated';
 
   return (
     <div>
-      <Drawer sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Drawer isCollapsed={isCollapsed} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} setIsCollapsed={setIsCollapsed} />
       <div className="lg:pl-64">
         <Header setSidebarOpen={setSidebarOpen} />
         <main className="py-5">

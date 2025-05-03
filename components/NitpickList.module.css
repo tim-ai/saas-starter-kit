@@ -1,0 +1,100 @@
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  width: 300px;
+  align-items: center;
+}
+
+.card {
+  position: relative;
+  width: 300px;
+  height: 220px;
+  cursor: pointer;
+  perspective: 1000px;
+}
+
+/* You may already have other card styles for flipping; now add a highlighted state */
+.highlighted {
+  border: 3px solid blue;
+  border-radius: 8px;
+}
+
+.cardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+
+.cardFace {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.cardFront {
+  background: #fff;
+}
+
+.thumbnailImage {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.basicInfo {
+  margin-top: 4px;
+  text-align: center;
+}
+
+.price {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #2a9d8f;
+}
+
+.town {
+  font-size: 0.9rem;
+  color: #264653;
+}
+
+/* Back side: flip effect, light modern look */
+.cardBack {
+  background: #f7f7f7;
+  transform: rotateY(180deg);
+  padding: 12px;
+  text-align: center;
+}
+
+.cardBack h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.cardBack p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.meta {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0;
+  font-size: 0.85rem;
+  justify-content: center;
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  margin-top: 4px;
+}

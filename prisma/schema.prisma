@@ -67,6 +67,7 @@ model User {
   accounts    Account[]
   sessions    Session[]
   invitations Invitation[]
+  nitpickedProperties Nitpick[]
 }
 
 model Team {
@@ -184,6 +185,74 @@ model Price {
   service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }
 
+model RealEstate {
+  id          String   @id @default(uuid())
+  address     String
+  type        String  @default("Single-family")
+  status      String? @default("active")
+
+  description String?
+  summary     String?
+  town        String?
+  state        String?
+  country      String?
+  postalCode   String?
+  geo         Json?
+
+  price       Int?
+  bedrooms    Int?
+  bathrooms   Int?
+  garage      Int?
+  area        Int?
+  yearBuilt   Int?
+  lotSize     Float?
+  lotSizeUnit String? @default("sqft")
+  listingType String?
+  listingDate DateTime?
+  listingId   String?
+  listingUrl  String?
+  listingSource String?
+  images      String[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+ 
+  extraInfo      RealEstateExtraInfo[]
+  evaluation    RealEstateEvaluation[]
+  nitpicks       Nitpick[]
+  @@index([type])
+  @@index([town])
+  @@index([state])
+  @@index([status])
+} 
+
+model RealEstateExtraInfo {
+  id          String   @id @default(uuid())
+  realEstateId String
+  type         String
+  source       String?
+  value       Json?
+  realEstate RealEstate @relation(fields: [realEstateId], references: [id], onDelete: Cascade)
+  @@index([realEstateId])
+}
+
+model RealEstateEvaluation {
+  id          String   @id @default(uuid())
+  realEstateId String
+  type        String
+  source      String?
+  value       Json?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  realEstate RealEstate @relation(fields: [realEstateId], references: [id], onDelete: Cascade)
+  @@index([type])
+  @@index([source])
+  @@index([createdBy])
+  @@index([realEstateId])
+}
+
+
 model jackson_store {
   key        String    @id(map: "_jackson_store_key") @db.VarChar(1500)
   value      String
@@ -217,4 +286,18 @@ model jackson_ttl {
 
   @@index([expiresAt], map: "_jackson_ttl_expires_at")
   @@ignore
+}
+
+model Nitpick {
+  id           String     @id @default(uuid())
+  userId       String
+  realEstateId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  realEstate RealEstate @relation(fields: [realEstateId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([realEstateId])
 }

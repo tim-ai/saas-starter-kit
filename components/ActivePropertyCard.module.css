@@ -1,0 +1,22 @@
+.propertyCard {
+    @apply bg-white rounded overflow-hidden shadow relative transition-transform duration-300 hover:scale-105;
+    height:auto;
+    }
+  
+  .propertyDetails {
+    @apply p-4;
+  }
+  
+  .price {
+    @apply text-blue-500 text-lg font-bold my-2;
+  }
+  
+  /* Overlay covers the card and fades in smoothly on hover */
+  .inspectOverlay {
+    @apply absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-100 transition-opacity duration-300;
+  }
+  
+  /* Icon style */
+  .inspectIcon {
+    @apply text-white text-4xl;
+  }

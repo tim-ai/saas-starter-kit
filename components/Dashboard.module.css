@@ -1,0 +1,102 @@
+.dashboard {
+  @apply grid gap-4 w-full mt-8 scroll-smooth overflow-y-auto p-4 bg-[#f8fafc] rounded-lg;
+  grid-template-columns: 1fr 1fr;
+
+  /* overflow-anchor is not available via Tailwind so it remains omitted;
+     if needed, add it as a custom property here */
+}
+
+.section {
+  @apply w-full bg-white rounded-[12px] p-8 shadow-md mb-8;
+}
+
+.sectionTitle {
+  @apply text-gray-800 mb-6 text-xl font-semibold;
+}
+
+.issuesGrid {
+  @apply grid gap-6;
+  grid-template-columns: minmax(100%, 1fr);
+}
+
+.issueCard {
+  @apply bg-white rounded-lg p-5 border border-gray-200 transition-all duration-200 ease-in-out;
+}
+
+.issueCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+.highlightedCard {
+  @apply border-blue-500 bg-gray-50;
+}
+
+.cardHeader {
+  @apply flex justify-between items-center mb-4;
+}
+
+.severityIndicator {
+  @apply text-sm font-semibold py-1 px-2 rounded;
+}
+
+.highSeverity {
+  @apply bg-red-50 text-red-600;
+}
+
+.mediumSeverity {
+  @apply bg-yellow-50 text-yellow-600;
+}
+
+.lowSeverity {
+  @apply bg-green-50 text-green-600;
+}
+
+.problemTitle {
+  @apply text-gray-800 text-base mb-3;
+}
+
+.detailGrid {
+  @apply grid grid-cols-1 gap-3;
+}
+
+.detailItem {
+  @apply flex flex-col;
+}
+
+.detailLabel {
+  @apply text-sm text-gray-500 mb-1;
+}
+
+.detailValue {
+  @apply text-sm text-gray-800 font-medium;
+}
+
+.recommendationLabel {
+  @apply text-sm text-gray-900 mb-1;
+}
+
+.recommendationValue {
+  @apply text-sm text-gray-800 font-medium;
+}
+
+.thumbButton {
+  @apply bg-transparent border-0 p-1 cursor-pointer transition-transform duration-200 ease-in-out;
+}
+
+.thumbButton:hover {
+  @apply scale-110;
+}
+
+.dataRow {
+  @apply flex justify-between mb-2 py-2 border-b border-gray-200;
+}
+
+.dataLabel {
+  @apply text-gray-500 font-medium;
+}
+
+.dataValue {
+  @apply text-gray-800 font-semibold;
+}
+

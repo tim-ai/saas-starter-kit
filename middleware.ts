@@ -20,7 +20,7 @@ const generateCSP = (): string => {
     'default-src': ["'self'"],
     'img-src': [
       "'self'",
-      'boxyhq.com',
+      '192.168.1.163',
       '*.boxyhq.com',
       '*.dicebear.com',
       'data:',
@@ -31,6 +31,7 @@ const generateCSP = (): string => {
       "'unsafe-eval'",
       '*.gstatic.com',
       '*.google.com',
+      '192.168.1.163'
     ],
     'style-src': ["'self'", "'unsafe-inline'"],
     'connect-src': [
@@ -71,15 +72,19 @@ const unAuthenticatedRoutes = [
   '/unlock-account',
   '/login/saml',
   '/.well-known/*',
+  '/logo.jpg',
 ];
 
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  console.log('Middleware triggered for path:', pathname);
+  console.log('Request headers:', req.headers);
   // Bypass routes that don't require authentication
   if (micromatch.isMatch(pathname, unAuthenticatedRoutes)) {
     return NextResponse.next();
   }
+  console.log('Middleware authing for path:', pathname);
 
   const redirectUrl = new URL('/auth/login', req.url);
   redirectUrl.searchParams.set('callbackUrl', encodeURI(req.url));

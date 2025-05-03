@@ -1,0 +1,69 @@
+
+  
+  .propertyCard {
+    @apply bg-white rounded overflow-hidden shadow;
+  }
+  
+  .propertyCard img {
+    @apply w-full h-52 object-cover;
+  }
+  
+  .propertyDetails {
+    @apply p-4;
+  }
+  
+  .price {
+    @apply text-blue-500 text-xl font-bold my-2;
+  }
+  
+  .specs {
+    @apply flex justify-between text-gray-600;
+  }
+  
+  /* Marker styles */
+  .marker {
+    @apply relative text-red-500 text-center p-2 rounded-full flex flex-col items-center justify-center shadow;
+  }
+  
+  .markerIcon {
+    @apply text-2xl filter drop-shadow;
+  }
+  
+  .marker span {
+    @apply absolute bottom-[-5px] left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-bold text-white drop-shadow;
+  }
+  
+  /* Marker animations and interactions */
+  .dropIn {
+    animation: markerDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  @keyframes markerDrop {
+    0% {
+      transform: translateY(-40px) scale(0.8);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .markerHover {
+    transform: scale(1.3) !important;
+    z-index: 1;
+  }
+  
+  .priceLabel {
+    @apply text-white font-bold text-xs drop-shadow;
+    margin-top: 4px;
+  }
+  
+  .tooltip {
+    @apply absolute bottom-full left-1/2 -translate-x-1/2 bg-black bg-opacity-90 text-white px-3 py-1 rounded text-sm whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-200;
+  }
+  
+  .marker:hover .tooltip {
+    @apply opacity-100;
+  }
+  

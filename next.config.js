@@ -5,11 +5,12 @@ const { withSentryConfig } = require('@sentry/nextjs');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  devIndicators: false,
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'boxyhq.com',
+        hostname: 'ssl.cdn-redfin.com',
       },
       {
         protocol: 'https',

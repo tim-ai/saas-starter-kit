@@ -6,7 +6,6 @@ import UserNavigation from './UserNavigation';
 const Navigation = () => {
   const { asPath, isReady, query } = useRouter();
   const [activePathname, setActivePathname] = useState<null | string>(null);
-
   const { slug } = query as { slug: string };
 
   useEffect(() => {
@@ -16,7 +15,7 @@ const Navigation = () => {
     }
   }, [asPath, isReady]);
 
-  const Navigation = () => {
+  const NavigationContent = () => {
     if (slug) {
       return <TeamNavigation activePathname={activePathname} slug={slug} />;
     } else {
@@ -25,8 +24,10 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="flex flex-1 flex-col">
-      <Navigation />
+    <nav className="flex flex-col transition-all duration-300 w-64">
+      <div className="flex-1 overflow-auto">
+        <NavigationContent />
+      </div>
     </nav>
   );
 };

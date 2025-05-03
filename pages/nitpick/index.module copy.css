@@ -1,0 +1,378 @@
+.container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  text-align: center;
+  color: #2d3748;
+  margin-bottom: 2rem;
+}
+
+.errorMessage {
+  padding: 1rem;
+  margin: 2rem auto;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  max-width: 80%;
+  text-align: center;
+}
+
+.searchContainer {
+  width: 80%;
+  margin: 0 auto 2rem;
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #4299e1;
+}
+
+.searchButton {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.searchButton:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.dashboard {
+  width: 100%;
+  margin-top: 2rem;
+  scroll-behavior: smooth;
+  overflow-anchor: none;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.section {
+  width: 95%;
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.issuesGrid {
+  display: grid;
+  grid-template-columns: minmax(100%, 1fr);
+  gap: 1.5rem;
+}
+
+.issueCard {
+  background: white;
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid #edf2f7;
+  transition: all 0.2s ease;
+}
+
+.issueCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+.highlightedCard {
+  border-color: #4299e1;
+  background-color: #f8fafc;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.severityIndicator {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.highSeverity {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.mediumSeverity {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.lowSeverity {
+  background: #f0fdf4;
+  color: #059669;
+}
+
+.problemTitle {
+  color: #1e293b;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.detailLabel {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.detailValue {
+  font-size: 0.875rem;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.thumbButton {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.thumbButton:hover {
+  transform: scale(1.1);
+}
+
+.dataRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.dataLabel {
+  color: #718096;
+  font-weight: 500;
+}
+
+.dataValue {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+
+
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.searchHeader {
+  padding: 20px;
+  background: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.searchHeader form {
+  display: flex;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.searchHeader input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.searchHeader button {
+  padding: 12px 24px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.searchHeader button:hover {
+  background: #0056b3;
+}
+
+.mapContainer {
+  margin: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.listingsGrid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+}
+
+.propertyCard {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.propertyCard img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.propertyDetails {
+  padding: 15px;
+}
+
+.price {
+  color: #007bff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.specs {
+  display: flex;
+  justify-content: space-between;
+  color: #666;
+}
+
+.marker {
+  position: relative;
+  color: #dc3545;
+  text-align: center;
+}
+
+.markerIcon {
+  font-size: 24px;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+}
+
+.marker span {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+/* Marker animations and interactions */
+.marker {
+  position: relative;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.dropIn {
+  animation: markerDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes markerDrop {
+  0% {
+    transform: translateY(-40px) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.markerHover {
+  transform: scale(1.3) !important;
+  z-index: 1;
+}
+
+.priceLabel {
+  color: white;
+  font-weight: bold;
+  font-size: 0.8rem;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  margin-top: 4px;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.marker:hover .tooltip {
+  opacity: 1;
+}

@@ -1,0 +1,14 @@
+.listingsGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  padding: 16px; /* optional padding */
+}
+
+.listingItem {
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+.listingItem:hover {
+  transform: scale(1.02);
+}

@@ -2,6 +2,8 @@ import {
   RectangleStackIcon,
   ShieldCheckIcon,
   UserCircleIcon,
+  MagnifyingGlassIcon,
+  
 } from '@heroicons/react/24/outline';
 import { useTranslation } from 'next-i18next';
 import NavigationItems from './NavigationItems';
@@ -11,6 +13,18 @@ const UserNavigation = ({ activePathname }: NavigationProps) => {
   const { t } = useTranslation('common');
 
   const menus: MenuItem[] = [
+    {
+      name: t('search-it'),
+      href: `/nitpick/search`,
+      icon: MagnifyingGlassIcon,
+      active: activePathname === `/nitpick/search`,
+    },
+    {
+      name: t('nitpick-it'),
+      href: `/nitpick`,
+      icon: ShieldCheckIcon,
+      active: activePathname === `/nitpick`,
+    },
     {
       name: t('all-teams'),
       href: '/teams',

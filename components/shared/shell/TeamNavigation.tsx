@@ -12,11 +12,23 @@ const TeamNavigation = ({ slug, activePathname }: NavigationItemsProps) => {
 
   const menus: MenuItem[] = [
     {
-      name: t('all-products'),
-      href: `/teams/${slug}/products`,
+      name: t('search-it'),
+      href: `/nitpick/search`,
       icon: CodeBracketIcon,
-      active: activePathname === `/teams/${slug}/products`,
+      active: activePathname === `/nitpick/search`,
     },
+    {
+      name: t('nitpick-it'),
+      href: `/nitpick`,
+      icon: CodeBracketIcon,
+      active: activePathname === `/nitpick`,
+    },
+    // {
+    //   name: t('all-products'),
+    //   href: `/teams/${slug}/products`,
+    //   icon: CodeBracketIcon,
+    //   active: activePathname === `/teams/${slug}/products`,
+    // },
     {
       name: t('settings'),
       href: `/teams/${slug}/settings`,
