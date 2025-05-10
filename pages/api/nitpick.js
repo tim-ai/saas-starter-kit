@@ -17,6 +17,12 @@ export default async function handler(req, res) {
   }
 
   const { address } = req.body;
+  if (!address) {
+    res.status(400).json({ error: 'Address is required' });
+    return;
+  }
+  const lat = req.query.lat;
+  const lng = req.query.lng;
 
   // Get user session and extract user id.
   const session = await getSession(req, res);
@@ -33,7 +39,7 @@ export default async function handler(req, res) {
 
   try {
     const apiResponse = await fetch(
-      'http://127.0.0.1:8000/api/streaming/nitpick?user=' + userId + '&address=' + encodeURIComponent(address),
+      'http://127.0.0.1:8000/api/streaming/nitpick?user=' + userId + '&address=' + encodeURIComponent(address) + '&lat=' + lat + '&lng=' + lng,
       {
         signal: abortController.signal,
       }

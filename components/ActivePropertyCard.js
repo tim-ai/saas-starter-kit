@@ -19,6 +19,16 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted }) 
     }
   };
 
+  // If listing.price is a number, format it; otherwise, just use it as is.
+  const formattedPrice =
+    typeof listing.price === 'number'
+      ? new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0,
+        }).format(listing.price)
+      : listing.price;
+
   return (
     <div
       className={styles.propertyCard}
@@ -36,14 +46,19 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted }) 
         <img
           src={listing.image}
           alt={listing.address}
-          style={{ height: imgHeight, objectFit: 'cover', margin: '0 auto', width: '100%' }}
+          style={{
+            height: imgHeight,
+            objectFit: 'cover',
+            margin: '0 auto',
+            width: '100%'
+          }}
         />
       </a>
       <div className={styles.propertyDetails}>
         <a href={listing.url} target="_blank" rel="noopener noreferrer">
           <h3>{listing.address}</h3>
         </a>
-        <div className={styles.price}>{listing.price}</div>
+        <div className={styles.price}>{formattedPrice}</div>
       </div>
       {hovered && (
         <div className={styles.inspectOverlay} onClick={handleInspect}>

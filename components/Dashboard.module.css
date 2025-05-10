@@ -7,20 +7,20 @@
 }
 
 .section {
-  @apply w-full bg-white rounded-[12px] p-8 shadow-md mb-8;
+  @apply w-full bg-white rounded-[12px] p-4 shadow-md mb-2;
 }
 
 .sectionTitle {
-  @apply text-gray-800 mb-6 text-xl font-semibold;
+  @apply text-gray-800 mb-6 text-base font-semibold;
 }
 
 .issuesGrid {
-  @apply grid gap-6;
+  @apply grid gap-1;
   grid-template-columns: minmax(100%, 1fr);
 }
 
 .issueCard {
-  @apply bg-white rounded-lg p-5 border border-gray-200 transition-all duration-200 ease-in-out;
+  @apply bg-white rounded-lg p-2 border border-gray-200 transition-all duration-200 ease-in-out;
 }
 
 .issueCard:hover {
@@ -33,11 +33,11 @@
 }
 
 .cardHeader {
-  @apply flex justify-between items-center mb-4;
+  @apply flex justify-between items-center mb-2;
 }
 
 .severityIndicator {
-  @apply text-sm font-semibold py-1 px-2 rounded;
+  @apply text-xs font-semibold py-1 px-2 rounded;
 }
 
 .highSeverity {
@@ -53,31 +53,33 @@
 }
 
 .problemTitle {
-  @apply text-gray-800 text-base mb-3;
+  @apply text-gray-800 text-xs mb-3;
 }
 
 .detailGrid {
-  @apply grid grid-cols-1 gap-3;
+  @apply grid grid-cols-1 gap-1;
 }
 
 .detailItem {
-  @apply flex flex-col;
+  /* @apply flex flex-col mb-1; */
+  @apply grid grid-cols-2 gap-2 mb-1;
+  grid-template-columns: 30% 70%;
 }
 
 .detailLabel {
-  @apply text-sm text-gray-500 mb-1;
+  @apply text-xs text-gray-500 mb-1;
 }
 
 .detailValue {
-  @apply text-sm text-gray-800 font-medium;
+  @apply text-xs text-gray-800 mb-1;
 }
 
 .recommendationLabel {
-  @apply text-sm text-gray-900 mb-1;
+  @apply text-xs text-gray-900 mb-1;
 }
 
 .recommendationValue {
-  @apply text-sm text-gray-800 font-medium;
+  @apply text-xs text-gray-800 mb-1;
 }
 
 .thumbButton {

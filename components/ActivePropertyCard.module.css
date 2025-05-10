@@ -1,22 +1,44 @@
 .propertyCard {
     @apply bg-white rounded overflow-hidden shadow relative transition-transform duration-300 hover:scale-105;
-    height:auto;
+    height: auto;
+}
+
+/* Adjust card padding/margins for smaller devices */
+@media (max-width: 768px) {
+    .propertyCard {
+        @apply p-2;
     }
-  
-  .propertyDetails {
+}
+
+.propertyDetails {
     @apply p-4;
-  }
-  
-  .price {
+}
+
+/* Base price styling */
+.price {
     @apply text-blue-500 text-lg font-bold my-2;
-  }
-  
-  /* Overlay covers the card and fades in smoothly on hover */
-  .inspectOverlay {
+}
+
+/* Adjust price text size on smaller screens */
+@media (max-width: 768px) {
+    .price {
+        @apply text-blue-500 text-base font-bold my-1;
+    }
+}
+
+/* Overlay covers the card and fades in smoothly on hover */
+.inspectOverlay {
     @apply absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-100 transition-opacity duration-300;
-  }
-  
-  /* Icon style */
-  .inspectIcon {
+}
+
+/* Icon style */
+.inspectIcon {
     @apply text-white text-4xl;
-  }
+}
+
+/* Adjust icon size on smaller screens */
+@media (max-width: 768px) {
+    .inspectIcon {
+        @apply text-3xl;
+    }
+}

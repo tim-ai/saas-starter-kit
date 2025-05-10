@@ -2,7 +2,6 @@ import {
   RectangleStackIcon,
   ShieldCheckIcon,
   UserCircleIcon,
-  MagnifyingGlassIcon,
   
 } from '@heroicons/react/24/outline';
 import { useTranslation } from 'next-i18next';
@@ -13,24 +12,19 @@ const UserNavigation = ({ activePathname }: NavigationProps) => {
   const { t } = useTranslation('common');
 
   const menus: MenuItem[] = [
-    {
-      name: t('search-it'),
-      href: `/nitpick/search`,
-      icon: MagnifyingGlassIcon,
-      active: activePathname === `/nitpick/search`,
-    },
-    {
-      name: t('nitpick-it'),
-      href: `/nitpick`,
-      icon: ShieldCheckIcon,
-      active: activePathname === `/nitpick`,
-    },
-    {
-      name: t('all-teams'),
-      href: '/teams',
-      icon: RectangleStackIcon,
-      active: activePathname === '/teams',
-    },
+    // {
+    //   name: t('search-it'),
+    //   href: `/nitpick/search`,
+    //   icon: MagnifyingGlassIcon,
+    //   active: activePathname === `/nitpick/search`,
+    // },
+    // {
+    //   name: t('nitpick-it'),
+    //   href: `/nitpick`,
+    //   icon: ShieldCheckIcon,
+    //   active: activePathname === `/nitpick`,
+    // },
+
     {
       name: t('account'),
       href: '/settings/account',
@@ -42,6 +36,12 @@ const UserNavigation = ({ activePathname }: NavigationProps) => {
       href: '/settings/security',
       icon: ShieldCheckIcon,
       active: activePathname === '/settings/security',
+    },
+    {
+      name: t('all-teams'),
+      href: '/teams',
+      icon: RectangleStackIcon,
+      active: activePathname === '/teams',
     },
   ];
 

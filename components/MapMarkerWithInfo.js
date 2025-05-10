@@ -49,8 +49,8 @@ export default function MapMarkerWithInfo({
   return (
     <>
       <MarkerF
-        position={{ lat: listing.lat, lng: listing.lng }}
-        key = {listing.adress}
+        position={{ lat: listing._geo.lat, lng: listing._geo.lng }}
+        key = {listing.address}
         icon={
           isHovered
             ? {

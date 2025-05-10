@@ -1,12 +1,11 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { GoogleMap, LoadScript} from '@react-google-maps/api';
-import { FaSpinner } from 'react-icons/fa';
+import { useState, useMemo, useEffect } from 'react';
+import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import axios from 'axios';
 import styles from './index.module.css';
 import NitpickList from '../../components/NitpickList';
 import MapMarkerWithInfo from '../../components/MapMarkerWithInfo';
 import ListingsGrid from '../../components/ListingsGrid';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
 // Define libraries outside the component
 const libraries = ['places'];
 
@@ -21,12 +20,11 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const [nitpicks] = useState(serverNitpicks || []);
   const [hoveredListingId, setHoveredListingId] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const submitButtonRef = useRef(null);
 
   const mapContainerStyle = {
     width: '100%',
     height: '600px',
+    // margin: '20px auto',
     fontSize: '16px',
     borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
@@ -63,12 +61,10 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      const response = await axios.post(`/api/search`, searchTerm);
+      const response = await axios.get(`/api/listings?town=${searchTerm}`);
       if (response.data.length === 0) {
         setMapError('No listings found for the specified location.');
-        setLoading(false);
         return;
       }
       setListings(response.data);
@@ -81,8 +77,6 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
         error.response?.data?.message || error.message || 'An unexpected error occurred.';
       setMapError(`Error fetching listings: ${errorMessage}`);
       console.error('Error fetching listings:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -104,66 +98,70 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
             setHoveredListingId={setHoveredListingId}
             hoverTimeout={hoverTimeout}
             setHoverTimeout={setHoverTimeout}
-          />
+        />
         )),
     [listings, hoveredListingId, hoverTimeout]
   );
 
   return (
-    <div className={styles.container2col}>
-      <div className={styles.searchContainer}>
-        <header className={styles.searchHeader}>
-          <form onSubmit={handleSearch} className={styles.searchForm}>
-            <input
-              type="text"
-              placeholder="Search Your Dream Home..."
-              className={styles.searchInput}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button
-              type="submit"
-              className={loading ? `${styles.searchButton} ${styles.loading}` : styles.searchButton}
-              disabled={loading}
-              ref={submitButtonRef}
-            >
-              {loading ? 'Processing...' : 'Search'}
-            </button>
-          </form>
-        </header>
+  <div className={styles.container2col}>
+    <div className={styles.searchContainer}>
+      <header className={styles.searchHeader}>
+        <form onSubmit={handleSearch}>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Search for properties..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button type="submit">Search</button>
+        </form>
+      </header>
 
-        <LoadScript
-          googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
-          libraries={libraries}
-          onError={() => setMapError('Failed to load Google Maps. Please check your API key.')}
-        >
-          <div className={styles.mapContainer} style={{ margin: '0 auto', top: '0', zIndex: 10 }}>
-            {!isMapLoaded && <div className={styles.mapLoading}>Loading map...</div>}
-            <GoogleMap
-              mapContainerStyle={mapContainerStyle}
-              zoom={zoom}
-              center={mapCenter}
-              options={{ disableDefaultUI: true }}
-              onLoad={() => setIsMapLoaded(true)}
-              onError={handleMapError}
-            >
-              {markers}
-            </GoogleMap>
-          </div>
-        </LoadScript>
+      <LoadScript
+        googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
+        libraries={libraries}
+        onError={() =>
+          setMapError('Failed to load Google Maps. Please check your API key.')
+        }
+      >
+        <div className={styles.mapContainer} style={{ margin: '0 auto', top: '0', zIndex: 10 }}>
+          {!isMapLoaded && <div className={styles.mapLoading}>Loading map...</div>}
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            zoom={zoom}
+            center={mapCenter}
+            options={{ disableDefaultUI: true }}
+            onLoad={() => setIsMapLoaded(true)}
+            onError={handleMapError}
+          >
+            {markers}
+            {/* {markerPosition && (
+              <MarkerF
+                position={markerPosition}
+                icon={{
+                  url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                  scaledSize: new window.google.maps.Size(40, 40),
+                }}
+              />
+            )} */}
+          </GoogleMap>
+        </div>
+      </LoadScript>
 
-        {mapError && (
-          <div className={styles.errorBanner}>
-            {mapError}
-          </div>
-        )}
+      {mapError && (
+        <div className={styles.errorBanner}>
+          {mapError}
+        </div>
+      )}
 
-        <ListingsGrid
-          listings={listings}
-          hoveredListingId={hoveredListingId}
-          setHoveredListingId={setHoveredListingId}
-        />
-      </div>
+      <ListingsGrid
+        listings={listings}
+        hoveredListingId={hoveredListingId}
+        setHoveredListingId={setHoveredListingId}
+      />
+    </div>
 
       {nitpicks.length > 0 && (
         <div className={styles.savedSection}>
@@ -176,13 +174,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
         </div>
       )}
 
-      {/* Spinner overlay to indicate processing */}
-      {loading && (
-        <div className={styles.spinnerOverlay}>
-          <FaSpinner className={styles.spinner} />
-        </div>
-      )}
-    </div>
+      </div>
   );
 }
 
@@ -207,13 +199,8 @@ export async function getServerSideProps(context) {
   const { transformNitpick } = require('@/lib/nitpick');
   const nitpicks = data.map(transformNitpick);
 
-  const { locale } = context;
-
   return {
-    props: { 
-      ...(locale ? await serverSideTranslations(locale, ['common']) : {}),
-
-      nitpicks 
-    },
+    props: { nitpicks },
   };
 }
+

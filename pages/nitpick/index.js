@@ -1,12 +1,13 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
 import { GoogleMap, LoadScript, Autocomplete, Marker } from '@react-google-maps/api';
-import { FaArrowLeft } from 'react-icons/fa';
 import Dashboard from '../../components/Dashboard';
 import PropertyCard from '../../components/PropertyCard';
 import NitpickList from '../../components/NitpickList';
 import styles from './index.module.css';
 import { transformNitpick } from '@/lib/nitpick';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -50,16 +51,6 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
       }, 200);
     }
   }, [queryAddress]);
-
-  // A simple back handler:
-  const handleBack = () => {
-    if (window.history.length > 2) {
-      router.back();
-    } else {
-      // fallback: navigate to a known page, for example "/" or "/search"
-      router.push('/');
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,7 +104,9 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
 
       // Submit nitpicking request...
       const abortController = new AbortController();
-      const response = await fetch('/api/nitpick?user=test', {
+      const lat = markerPosition?.lat || "";
+      const lng = markerPosition?.lng || "";
+      const response = await fetch(`/api/nitpick?lat=${lat}&lng=${lng}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address }),
@@ -202,110 +195,108 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
   };
 
   return (
-    <div className={styles.container}>
-      <header className={styles.searchHeader}>
-        <button onClick={handleBack} className={styles.backButton}>
-          <FaArrowLeft />
-        </button>
-        <h1 className={styles.title}>Property Nitpicker</h1>
-      </header>
-      <LoadScript
-        googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
-        libraries={libraries}
-        onError={() =>
-          setMapError('Failed to load Google Maps. Please check your API key.')
-        }
-      >
-        <div className={styles.searchContainer}>
-          <form onSubmit={handleSubmit}>
-            <Autocomplete
-              onLoad={(autocomplete) => setAutocomplete(autocomplete)}
-              onPlaceChanged={() => {
-                if (autocomplete) {
-                  const place = autocomplete.getPlace();
-                  if (place.formatted_address) {
-                    setAddress(place.formatted_address);
-                  }
-                  if (place.geometry?.location) {
-                    const lat = place.geometry.location.lat();
-                    const lng = place.geometry.location.lng();
-                    setMapCenter({ lat, lng });
-                    setMarkerPosition({ lat, lng });
-                    if (mapInstance) {
-                      mapInstance.panTo({ lat, lng });
+    <div className={styles.container2col}>
+      <div className = {styles.searchContainer}>
+        <LoadScript
+          googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
+          libraries={libraries}
+          onError={() =>
+            setMapError('Failed to load Google Maps. Please check your API key.')
+          }
+        >
+          <div >
+            <form onSubmit={handleSubmit} className={styles.searchForm}>
+              <Autocomplete
+                className={styles.searchHeader}
+                onLoad={(autocomplete) => setAutocomplete(autocomplete)}
+                onPlaceChanged={() => {
+                  if (autocomplete) {
+                    const place = autocomplete.getPlace();
+                    if (place.formatted_address) {
+                      setAddress(place.formatted_address);
+                    }
+                    if (place.geometry?.location) {
+                      const lat = place.geometry.location.lat();
+                      const lng = place.geometry.location.lng();
+                      setMapCenter({ lat, lng });
+                      setMarkerPosition({ lat, lng });
+                      if (mapInstance) {
+                        mapInstance.panTo({ lat, lng });
+                      }
                     }
                   }
-                }
-              }}
-            >
-              <input
-                placeholder="Enter US Address"
-                className={styles.searchInput}
-                value={address} // Bound to state so it updates when queryAddress changes.
-                onChange={(e) => setAddress(e.target.value)}
-              />
-            </Autocomplete>
-            <button 
-              type="submit" 
-              className={styles.searchButton} 
-              disabled={loading}
-              ref={submitButtonRef}  // attach the ref here.
-            >
-              {loading ? 'Processing...' : 'Nitpick It!'}
-            </button>
-          </form>
-        </div>
-        <div className={styles.mapContainer} data-columns={hasPropertyMeta ? '2' : '1'}>
-          {hasPropertyMeta && (
-            <div className={styles.propertyCardContainer}>
-              <PropertyCard listing={propertyMeta} imgHeight="350px" />
-            </div>
-          )}
-          <div className={styles.mapWrapper}>
-            <GoogleMap
-              mapContainerStyle={mapContainerStyle}
-              zoom={14}
-              center={mapCenter}
-              options={{ disableDefaultUI: true }}
-              onLoad={(map) => setMapInstance(map)}
-            >
-              {markerPosition && (
-                <Marker
-                  position={markerPosition}
-                  icon={{
-                    url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                    scaledSize: new window.google.maps.Size(40, 40),
-                  }}
+                }}
+              >
+                <input
+                  placeholder="Enter US Address"
+                  className={styles.searchInput}
+                  value={address} // Bound to state so it updates when queryAddress changes.
+                  style={{ width: '100%' }}
+                  onChange={(e) => setAddress(e.target.value)}
                 />
-              )}
-            </GoogleMap>
+              </Autocomplete>
+              <button 
+                type="submit" 
+                className={styles.searchButton}
+                disabled={loading}
+                ref={submitButtonRef}
+              >
+                {loading ? 'Processing...' : 'Nitpick It!'}
+              </button>
+            </form>
           </div>
-        </div>
-      </LoadScript>
+          <div className={styles.mapContainer} data-columns={hasPropertyMeta ? '2' : '1'}>
+            {hasPropertyMeta && (
+              <div className={styles.propertyCardContainer}>
+                <PropertyCard listing={propertyMeta} imgHeight="300px" />
+              </div>
+            )}
+            <div className={styles.mapWrapper}>
+              <GoogleMap
+                mapContainerStyle={mapContainerStyle}
+                zoom={14}
+                center={mapCenter}
+                options={{ disableDefaultUI: true }}
+                onLoad={(map) => setMapInstance(map)}
+              >
+                {markerPosition && (
+                  <Marker
+                    position={markerPosition}
+                    icon={{
+                      url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                      scaledSize: new window.google.maps.Size(40, 40),
+                    }}
+                  />
+                )}
+              </GoogleMap>
+            </div>
+          </div>
+        </LoadScript>
 
-      {!mapError ? (
-        <>
-          <Dashboard
-            sections={sections}
-            currentHighlights={currentHighlights}
-            setCurrentHighlights={setCurrentHighlights}
-            handleThumb={handleThumb}
-          />
-        </>
-      ) : (
-        <div className={styles.errorMessage}>
-          {mapError}
-          <button
-            onClick={() => {
-              setMapError(null);
-              setAddress('');
-            }}
-            className="px-4 py-2 bg-blue-500 text-white rounded ml-4"
-          >
-            Return
-          </button>
-        </div>
-      )}
+        {!mapError ? (
+          <>
+            <Dashboard
+              sections={sections}
+              currentHighlights={currentHighlights}
+              setCurrentHighlights={setCurrentHighlights}
+              handleThumb={handleThumb}
+            />
+          </>
+        ) : (
+          <div className={styles.errorMessage}>
+            {mapError}
+            <button
+              onClick={() => {
+                setMapError(null);
+                setAddress('');
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded ml-4"
+            >
+              Return
+            </button>
+          </div>
+        )}
+      </div>
 
       {nitpicks.length > 0 && (
         <div className={styles.savedSection}>
@@ -342,7 +333,13 @@ export async function getServerSideProps(context) {
   // Transform DB record format to listing format using the reusable function.
   const nitpicks = data.map(transformNitpick);
   
-  return {
-    props: { nitpicks },
-  };
+    const { locale } = context;
+  
+    return {
+      props: { 
+        ...(locale ? await serverSideTranslations(locale, ['common']) : {}),
+  
+        nitpicks 
+      },
+    };
 }

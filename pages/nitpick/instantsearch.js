@@ -1,13 +1,11 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { GoogleMap, LoadScript} from '@react-google-maps/api';
-import { FaSpinner } from 'react-icons/fa';
-import axios from 'axios';
+import { useState, useMemo, useEffect } from 'react';
+import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import styles from './index.module.css';
 import NitpickList from '../../components/NitpickList';
 import MapMarkerWithInfo from '../../components/MapMarkerWithInfo';
 import ListingsGrid from '../../components/ListingsGrid';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-// Define libraries outside the component
+import { MeiliSearch } from 'meilisearch';
+
 const libraries = ['places'];
 
 export default function Map3D({ nitpicks: serverNitpicks }) {
@@ -21,8 +19,12 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const [nitpicks] = useState(serverNitpicks || []);
   const [hoveredListingId, setHoveredListingId] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const submitButtonRef = useRef(null);
+
+  // Initialize MeiliSearch client
+  const client = new MeiliSearch({
+    host: 'http://192.168.1.12:7700',
+    apiKey: '7ccdf1ae5b660d017468d18b9a2f5ac80c3c072b15e5b00ff594fe1a65de3512'
+  });
 
   const mapContainerStyle = {
     width: '100%',
@@ -32,6 +34,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   };
 
+  // Get user's location if possible
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -48,53 +51,41 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     }
   }, []);
 
-  useEffect(() => {
-    if (hoveredListingId) {
-      const element = document.getElementById(`listing-${hoveredListingId}`);
-      if (element) {
-        //element.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }
-    }
-  }, [hoveredListingId]);
-
-  const handleMapError = (error) => {
-    setMapError(`Map Error: ${error.error?.message || error}`);
-  };
-
+  // Query MeiliSearch when the form is submitted
   const handleSearch = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      const response = await axios.post(`/api/search`, searchTerm);
-      if (response.data.length === 0) {
+      const index = client.index('slistings');
+      const result = await index.search(searchTerm);
+      if (result.hits.length === 0) {
         setMapError('No listings found for the specified location.');
-        setLoading(false);
         return;
       }
-      setListings(response.data);
-      const first = response.data[0];
-      setMapCenter({ lat: first.lat, lng: first.lng });
-      setZoom(12);
-      setMarkerPosition({ lat: first.lat, lng: first.lng });
+      setListings(result.hits);
+      // Use the first hit's geo information (assuming you've set up Geo search in Meili)
+      const first = result.hits[0];
+      console.log(first);
+      if (first._geo) {
+
+        setMapCenter({ lat: first._geo.lat, lng: first._geo.lng });
+        setZoom(12);
+        setMarkerPosition({ lat: first._geo.lat, lng: first._geo.lng });
+      }
+      setMapError(null);
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || error.message || 'An unexpected error occurred.';
-      setMapError(`Error fetching listings: ${errorMessage}`);
-      console.error('Error fetching listings:', error);
-    } finally {
-      setLoading(false);
+      setMapError(`Error fetching listings: ${error.message}`);
     }
   };
 
+  // Create markers from the listings
   const markers = useMemo(
     () =>
       listings
         .filter(
           (listing) =>
-            listing?.lat &&
-            listing?.lng &&
-            !isNaN(listing.lat) &&
-            !isNaN(listing.lng)
+            listing?._geo &&
+            !isNaN(listing._geo.lat) &&
+            !isNaN(listing._geo.lng)
         )
         .map((listing) => (
           <MapMarkerWithInfo
@@ -113,21 +104,16 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     <div className={styles.container2col}>
       <div className={styles.searchContainer}>
         <header className={styles.searchHeader}>
-          <form onSubmit={handleSearch} className={styles.searchForm}>
+          <form onSubmit={handleSearch}>
             <input
               type="text"
-              placeholder="Search Your Dream Home..."
               className={styles.searchInput}
+              placeholder="Search properties by keyword"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button
-              type="submit"
-              className={loading ? `${styles.searchButton} ${styles.loading}` : styles.searchButton}
-              disabled={loading}
-              ref={submitButtonRef}
-            >
-              {loading ? 'Processing...' : 'Search'}
+            <button type="submit">
+              Search
             </button>
           </form>
         </header>
@@ -135,9 +121,14 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
         <LoadScript
           googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
           libraries={libraries}
-          onError={() => setMapError('Failed to load Google Maps. Please check your API key.')}
+          onError={() =>
+            setMapError('Failed to load Google Maps. Please check your API key.')
+          }
         >
-          <div className={styles.mapContainer} style={{ margin: '0 auto', top: '0', zIndex: 10 }}>
+          <div
+            className={styles.mapContainer}
+            style={{ margin: '0 auto', top: '0', zIndex: 10 }}
+          >
             {!isMapLoaded && <div className={styles.mapLoading}>Loading map...</div>}
             <GoogleMap
               mapContainerStyle={mapContainerStyle}
@@ -145,7 +136,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
               center={mapCenter}
               options={{ disableDefaultUI: true }}
               onLoad={() => setIsMapLoaded(true)}
-              onError={handleMapError}
+              onError={(error) => setMapError(`Map Error: ${error.error?.message || error}`)}
             >
               {markers}
             </GoogleMap>
@@ -175,18 +166,10 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
           />
         </div>
       )}
-
-      {/* Spinner overlay to indicate processing */}
-      {loading && (
-        <div className={styles.spinnerOverlay}>
-          <FaSpinner className={styles.spinner} />
-        </div>
-      )}
     </div>
   );
 }
 
-// Server-side fetching and transformation of nitpicks records.
 export async function getServerSideProps(context) {
   const protocol = context.req.headers['x-forwarded-proto'] || 'http';
   const host = context.req.headers.host;
@@ -207,13 +190,8 @@ export async function getServerSideProps(context) {
   const { transformNitpick } = require('@/lib/nitpick');
   const nitpicks = data.map(transformNitpick);
 
-  const { locale } = context;
-
   return {
-    props: { 
-      ...(locale ? await serverSideTranslations(locale, ['common']) : {}),
-
-      nitpicks 
-    },
+    props: { nitpicks },
   };
 }
+

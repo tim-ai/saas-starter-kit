@@ -1,114 +1,134 @@
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import {
-  ArrowRightOnRectangleIcon,
-  Bars3Icon,
-  SunIcon,
   UserCircleIcon,
+  ArrowRightOnRectangleIcon,
+  SunIcon,
 } from '@heroicons/react/24/outline';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import useTheme from 'hooks/useTheme';
 import env from '@/lib/env';
 import { useTranslation } from 'next-i18next';
 import { useCustomSignOut } from 'hooks/useCustomSignout';
+import TeamDropdown from '@/components/shared/TeamDropdown';
+import UserNavigation from '@/components/shared/shell/UserNavigation';
+import styles from './Header.module.css';
 
-interface HeaderProps {
-  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}
 
-const Header = ({ setSidebarOpen }: HeaderProps) => {
+const Header = () => {
   const { toggleTheme } = useTheme();
   const { status, data } = useSession();
   const { t } = useTranslation('common');
   const signOut = useCustomSignOut();
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  let dropdownTimeout: NodeJS.Timeout;
 
-  if (status === 'loading' || !data) {
-    return null;
-  }
+  const handleDropdownMouseEnter = () => {
+    if (dropdownTimeout) {
+      clearTimeout(dropdownTimeout);
+    }
+    setDropdownOpen(true);
+  };
 
+  const handleDropdownMouseLeave = () => {
+    dropdownTimeout = setTimeout(() => {
+      setDropdownOpen(false);
+    }, 300); // 300ms delay
+  };
+
+  if (status === 'loading' || !data) return null;
   const { user } = data;
 
   return (
-    <div className="sticky top-0 z-40 flex h-14 shrink-0 items-center border-b px-4 sm:gap-x-6 sm:px-6 lg:px-8 bg-white dark:bg-black dark:text-white">
-      <button
-        type="button"
-        className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-50 lg:hidden"
-        onClick={() => setSidebarOpen(true)}
-      >
-        <span className="sr-only">{t('open-sidebar')}</span>
-        <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-      </button>
-      <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-        <div className="relative flex flex-1"></div>
-        <div className="flex items-center gap-x-4 lg:gap-x-6">
-          <div className="dropdown dropdown-end">
-            <div className="flex items-center cursor-pointer" tabIndex={0}>
-              <span className="hidden lg:flex lg:items-center">
-                <button
-                  className="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-50"
-                  aria-hidden="true"
-                >
-                  {user.name}
-                </button>
-                <ChevronDownIcon
-                  className="ml-2 h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                />
-              </span>
-            </div>
-            <ul
-              tabIndex={0}
-              className="dropdown-content z-[1] menu p-2 shadow bg-base-100 border rounded w-40 space-y-1"
+    <header className={styles.header}>
+      <div className={styles.container}>
+        <div className={styles.inner}>
+          {/* <button
+            type="button"
+            className={styles.mobileButton}
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+          </button> */}
+          <div className="logo-container">
+            <svg width="230" height="50" viewBox="0 0 230 50" xmlns="http://www.w3.org/2000/svg"> {/* Adjusted width slightly for Montserrat potentially */}
+                <g fill="none" stroke="#6B7280" stroke-width="2.5"> {/* Medium gray stroke */}
+                    <circle cx="25" cy="25" r="10"/>
+                    <line x1="32" y1="32" x2="40" y2="40"/>
+                </g>
+
+                {/* Changed font-family to Montserrat */}
+                <text x="55" y="32" font-family="Montserrat, Arial, sans-serif" font-size="18" font-weight="800" fill="#374151" text-transform="uppercase" > 
+                    NITPICKER
+                    <tspan fill="#4B5563">.US</tspan> 
+                </text>
+              </svg>
+          </div>
+
+          <nav className={styles.nav}>
+            <Link href="/nitpick/search" className={styles.navItem}>
+              {t('Search')}
+            </Link>
+            <Link href="/nitpick" className={styles.navItem}>
+              {t('Nitpick')}
+            </Link>
+          </nav>
+
+          <div className="flex items-center">
+            <div
+              className={styles.dropdown}
+              onMouseEnter={handleDropdownMouseEnter}
+              onMouseLeave={handleDropdownMouseLeave}
             >
-              <li
-                onClick={() => {
-                  if (document.activeElement) {
-                    (document.activeElement as HTMLElement).blur();
-                  }
-                }}
-              >
-                <Link
-                  href="/settings/account"
-                  className="block px-2 py-1 text-sm leading-6 text-gray-900 dark:text-gray-50 cursor-pointer"
-                >
-                  <div className="flex items-center">
-                    <UserCircleIcon className="w-5 h-5 mr-1" /> {t('account')}
-                  </div>
-                </Link>
-              </li>
-
-              {env.darkModeEnabled && (
-                <li>
-                  <button
-                    className="block px-2 py-1 text-sm leading-6 text-gray-900 dark:text-gray-50 cursor-pointer"
-                    type="button"
-                    onClick={toggleTheme}
-                  >
-                    <div className="flex items-center">
-                      <SunIcon className="w-5 h-5 mr-1" /> {t('switch-theme')}
+              <button className={styles.userButton}>
+                <UserCircleIcon className="h-6 w-6 mr-1" />
+                {user.name}
+                <ChevronDownIcon className="h-5 w-5 ml-1 text-gray-500" />
+              </button>
+              {isDropdownOpen && (
+                <div className={styles.dropdownContent}>
+                  <div className={styles.dropdownSection}>
+                    <h4 className={styles.dropdownTitle}>
+                      {t('User Settings')}
+                    </h4>
+                    <div className="text-sm">
+                      <UserNavigation activePathname={''} />
                     </div>
-                  </button>
-                </li>
-              )}
-
-              <li>
-                <button
-                  className="block px-2 py-1 text-sm leading-6 text-gray-900 dark:text-gray-50 cursor-pointer"
-                  type="button"
-                  onClick={signOut}
-                >
-                  <div className="flex items-center">
-                    <ArrowRightOnRectangleIcon className="w-5 h-5 mr-1" />{' '}
-                    {t('logout')}
                   </div>
-                </button>
-              </li>
-            </ul>
+                  <div className={styles.dropdownSection}>
+                    <h4 className={styles.dropdownTitle}>
+                      {t('Team')}
+                    </h4>
+                    <TeamDropdown />
+                  </div>
+                  <div className={styles.dropdownSection}>
+                    {env.darkModeEnabled && (
+                      <button
+                        type="button"
+                        className={styles.dropdownItem}
+                        onClick={toggleTheme}
+                      >
+                        <SunIcon className="w-5 h-5 mr-2" />
+                        {t('Switch Theme')}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={styles.dropdownItem}
+                      onClick={signOut}
+                    >
+                      <ArrowRightOnRectangleIcon className="w-5 h-5 mr-2" />
+                      {t('Logout')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 

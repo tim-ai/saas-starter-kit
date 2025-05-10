@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import { signOut as nextSignout} from 'next-auth/react';
 
 export function useCustomSignOut() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export function useCustomSignOut() {
         throw new Error('Signout failed');
       }
 
-      router.push('/auth/login');
+      await nextSignout({ callbackUrl: '/auth/login' });
     } catch (error) {
       console.error('Error during sign out:', error);
     }

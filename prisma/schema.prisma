@@ -190,15 +190,13 @@ model RealEstate {
   address     String
   type        String  @default("Single-family")
   status      String? @default("active")
-
   description String?
   summary     String?
   town        String?
-  state        String?
-  country      String?
-  postalCode   String?
+  state       String?
+  country     String?
+  postalCode  String?
   geo         Json?
-
   price       Int?
   bedrooms    Int?
   bathrooms   Int?
@@ -217,15 +215,18 @@ model RealEstate {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdBy   String?
- 
-  extraInfo      RealEstateExtraInfo[]
-  evaluation    RealEstateEvaluation[]
-  nitpicks       Nitpick[]
+  
+  extraInfo    RealEstateExtraInfo[]
+  evaluation   RealEstateEvaluation[]
+  nitpicks     Nitpick[]
+  
+  statuses     RealEstateStatus[]
+  
   @@index([type])
   @@index([town])
   @@index([state])
   @@index([status])
-} 
+}
 
 model RealEstateExtraInfo {
   id          String   @id @default(uuid())
@@ -252,6 +253,17 @@ model RealEstateEvaluation {
   @@index([realEstateId])
 }
 
+model RealEstateStatus {
+  id           String     @id @default(uuid())
+  realEstateId String
+  status       String
+  changedAt    DateTime   @default(now())
+  changedBy    String?
+  
+  realEstate   RealEstate @relation(fields: [realEstateId], references: [id], onDelete: Cascade)
+  
+  @@index([realEstateId])
+}
 
 model jackson_store {
   key        String    @id(map: "_jackson_store_key") @db.VarChar(1500)

@@ -1,13 +1,27 @@
 /* Container and header styles */
 .container {
   @apply p-8 w-full mx-auto;
-  margin-left: -200px;
-  width: 130%;
-  padding-right: 360px; /* leave space for the fixed saved section */
+  gap: 16px;
+}
+
+.container2col {
+  @apply p-8 mx-auto;
+  display: grid;
+  grid-template-columns: 80% 20%;  /* 80% for main content; 20% for sidebar */
+  gap: 16px;
+
+}
+
+/* Only stack into one column when viewport is very narrow (e.g., below 600px) */
+@media (max-width: 600px) {
+  .container2col {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 .title {
-  @apply text-center text-gray-800 mb-8 text-5xl font-bold;
+  @apply text-center text-gray-800 mb-8 text-5xl font-bold p-8;
   flex-grow: 1;
   font-size: 24px;
   font-weight: bold;
@@ -22,11 +36,12 @@
 
 /* Search styles */
 .searchContainer {
-  @apply w-full mx-auto mb-8 relative;
-}
+  @apply mx-4 mb-8 relative text-sm;
+  background-color: white;
+  padding: 16px;}
 
 .searchInput {
-  @apply w-full p-4 border-2 border-gray-300 rounded text-base transition-colors duration-300 ease-in-out;
+  @apply flex-1 p-2 border-2 rounded text-sm transition-colors duration-300 ease-in-out  w-full; /* ensures the input takes available space */
 }
 
 .searchInput:focus {
@@ -34,11 +49,15 @@
 }
 
 .searchButton {
-  @apply absolute right-2 top-2 py-3 px-6 bg-blue-500 text-white border-0 rounded-md cursor-pointer transition-colors duration-300 ease-in-out;
+  @apply  p-3 bg-blue-500 text-white text-sm border-0 rounded-md cursor-pointer transition-colors duration-300 ease-in-out;
 }
 
 .searchButton:disabled {
   @apply bg-gray-400 cursor-not-allowed;
+}
+
+.searchForm {
+  @apply flex  items-center gap-2;
 }
 
 /* Dashboard and section cards */
@@ -50,15 +69,12 @@
 
 /* Saved nitpicks section */
 .savedSection {
-  position: fixed;
-  top: 100px;               /* adjust as needed */
-  right: 80px;              /* adjust as needed */
   background-color: #f7f7f7;  /* light gray background */
   padding: 8px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 320px;
-  max-height: calc(100vh - 120px); /* allow scrolling if content is too tall */
+  /* max-width: 320px;
+  max-height: calc(100vh - 120px); */
   overflow-y: auto;
   z-index: 10;
 }
@@ -66,7 +82,7 @@
 .savedTitle {
   font-size: 1.2rem;
   font-weight: bold;
-  margin-bottom: 12px;
+  margin-bottom: 32px;
 }
 
 /* Map and property card layout */
@@ -95,7 +111,7 @@
 }
 
 .sectionTitle {
-  @apply text-gray-800 mb-6 text-xl font-semibold;
+  @apply text-gray-800 mb-6 text-xl font-semibold gap-2;
 }
 
 /* Issues grid and cards */
@@ -189,19 +205,18 @@
 
 /* Search header */
 .searchHeader {
-  @apply p-5 bg-gray-100 shadow-sm;
-  display: flex;
-  align-items: center;
+  @apply p-5 bg-white text-sm;
   padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
+  /* border-bottom: 1px solid #e0e0e0; */
+  width: clamp(200px, 80%, 1000px); /* No smaller than 200px, grows to 50% of container, but not more than 600px */
 }
 
 .searchHeader form {
-  @apply flex max-w-3xl mx-auto;
+  @apply flex  mx-auto ;
 }
 
 .searchHeader input {
-  @apply flex-1 p-3 border border-gray-300 rounded mr-2 text-base;
+  @apply flex-1 p-3  w-full mr-2 text-sm;
 }
 
 .searchHeader button {
@@ -223,7 +238,7 @@
 
 /* Map container uses grid */
 .mapContainer {
-  @apply grid w-full h-full mt-8 scroll-smooth  p-4 bg-[#f8fafc] rounded-lg;
+  @apply grid w-full mt-8 scroll-smooth  p-4 bg-[#f8fafc] rounded-lg;
   display: grid;
   gap: 1rem;
   grid-template-columns: 1fr;
@@ -320,4 +335,14 @@
   padding: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+/* Ensure the spinner overlay covers the whole container */
+.spinnerOverlay {
+  @apply fixed inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 z-50;
+}
+
+/* Spinner icon styling: using Tailwind's animate-spin utility */
+.spinner {
+  @apply animate-spin h-12 w-12 text-blue-500;
 }

@@ -42,8 +42,8 @@ export default function Dashboard({ sections, currentHighlights, setCurrentHighl
                 <div className={styles.cardHeader}>
                   <span
                     className={`${styles.severityIndicator} ${
-                      issue.severity === 'High' ? styles.highSeverity :
-                      issue.severity === 'Medium' ? styles.mediumSeverity :
+                      issue.severity === 'high' ? styles.highSeverity :
+                      issue.severity === 'medium' ? styles.mediumSeverity :
                       styles.lowSeverity
                     }`}
                   >

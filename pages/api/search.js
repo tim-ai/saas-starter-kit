@@ -1,41 +1,55 @@
 
 import axios from 'axios';
+import { getSession } from '@/lib/session';
 
 export default async function handler(req, res) {
 
-  if (req.method !== 'GET') {
+  if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { query } = req;
-  const searchTerm = query.town || '';
+  const searchTerm = req.body;
 
   // Validate search term
-  if (searchTerm.length < 3) {
-    return res.status(400).json({ message: 'Search term must be at least 3 characters long' });
+  if (searchTerm.length < 2) {
+    return res.status(400).json({ message: 'Search term must be at least 2 characters long' });
   }
 
-  // fetch from localhost:8000
-  const url = `http://127.0.0.1:8000/api/listings?town=${searchTerm}`;
+  const session = await getSession(req, res);
+  if (!session || !session.user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  const userId = session?.user.id;
 
-  return await axios.get(url)
+  // fetch from localhost:8000
+  const url = `http://127.0.0.1:8000/api/search?userId=${userId}`;
+
+  return await axios.post(url, searchTerm)
     .then(response => {
       const data = response.data;
-      if (data.length === 0) {
+      // test if hits in data
+      if (!data || !data.hits) {
         return res.status(404).json({ message: 'No listings found' });
       }
-      const listings = data.map((listing) => ({
+      var hits = data.hits
+      if (hits.length === 0) {
+        return res.status(404).json({ message: 'No hits found' });
+      }
+
+      const listings = hits.map((listing) => ({
         id: listing.id,
         address: listing.address,
         price: listing.price,
-        beds: parseInt(listing.beds),
-        baths: parseFloat(listing.baths),
-        sqft: listing.sqft.replace(/,/g, ''),
+        beds: parseInt(listing.bedrooms),
+        baths: parseFloat(listing.bathrooms),
+        garage: parseInt(listing.garage),
+        sqft: listing.area,
         url: listing.url,
         image: listing.image,
         _geo: listing._geo,
-        lat: listing._geo["lat"],
-        lng: listing._geo["lng"]
+        lat: listing._geo?.lat,
+        lng: listing._geo?.lng
       }));
       res.status(200).json(listings);
     })
