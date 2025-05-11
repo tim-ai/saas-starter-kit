@@ -15,8 +15,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'Search term must be at least 3 characters long' });
   }
 
-  // fetch from localhost:8000
-  const url = `http://127.0.0.1:8000/api/listings?town=${searchTerm}`;
+  // fetch from localhost:9090
+  const url = `http://127.0.0.1:9090/api/listings?town=${searchTerm}`;
 
   return await axios.get(url)
     .then(response => {

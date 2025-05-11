@@ -30,20 +30,19 @@ export default async function handler(req, res) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
-
-  //const email = session?.user.email as string;
-
   const userId = session?.user.id;
+
+  // Read backend host and port from environment variables
+  const aiserverIp = process.env.AISERVER_IP || '127.0.0.1';
+  const aiserverPort = process.env.AISERVER_PORT || '9090';
+  const targetUrl = `http://${aiserverIp}:${aiserverPort}/api/streaming/nitpick?user=${userId}&address=${encodeURIComponent(address)}&lat=${lat}&lng=${lng}`;
 
   const abortController = new AbortController();
 
   try {
-    const apiResponse = await fetch(
-      'http://127.0.0.1:8000/api/streaming/nitpick?user=' + userId + '&address=' + encodeURIComponent(address) + '&lat=' + lat + '&lng=' + lng,
-      {
-        signal: abortController.signal,
-      }
-    );
+    const apiResponse = await fetch(targetUrl, {
+      signal: abortController.signal,
+    });
 
     // Forward status and headers from backend
     res.status(apiResponse.status);
