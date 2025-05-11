@@ -13,7 +13,7 @@ export default function SAMLIdPLogin() {
     }
 
     signIn('boxyhq-idp', {
-      callbackUrl: '/dashboard',
+      callbackUrl: '/',
       code: query?.code,
     });
   }, [isReady, query]);
