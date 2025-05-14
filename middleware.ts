@@ -73,6 +73,7 @@ const unAuthenticatedRoutes = [
   '/login/saml',
   '/.well-known/*',
   '/logo.jpg',
+  '/'
 ];
 
 export default async function middleware(req: NextRequest) {

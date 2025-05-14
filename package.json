@@ -49,6 +49,7 @@
     "currency-symbol-map": "5.1.0",
     "formik": "2.4.6",
     "i18next": "25.0.1",
+    "lucide-react": "^0.510.0",
     "mapbox-gl": "^3.11.1",
     "meilisearch": "^0.50.0",
     "micromatch": "4.0.8",

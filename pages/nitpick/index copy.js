@@ -1,12 +1,13 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
 import { GoogleMap, LoadScript, Autocomplete, Marker } from '@react-google-maps/api';
-import HouseListingCard from '../../components/HouseListingCard'; // <-- Updated import
+import Dashboard from '../../components/Dashboard';
 import PropertyCard from '../../components/PropertyCard';
 import NitpickList from '../../components/NitpickList';
 import styles from './index.module.css';
 import { transformNitpick } from '@/lib/nitpick';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -26,8 +27,8 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
   const [propertyMeta, setPropertyMeta] = useState(null);
   const [sections, setSections] = useState({});
   const [loading, setLoading] = useState(false);
-  const [nitpicks] = useState(serverNitpicks || []);
-  // const [currentHighlights, setCurrentHighlights] = useState(new Set());
+  const [nitpicks] = useState(serverNitpicks || []); // Loading from SSR
+  const [currentHighlights, setCurrentHighlights] = useState(new Set());
   const [autocomplete, setAutocomplete] = useState(null);
   const [mapError, setMapError] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 42.3601, lng: -71.0589 });
@@ -135,7 +136,6 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
                   setHasPropertyMeta(true);
                   setPropertyMeta(data.value);
                 } else if (data.type === 'issue') {
-                  data.comments = [];
                   if (!hasReset) {
                     setSections({ [data.area]: [data] });
                     hasReset = true;
@@ -163,7 +163,6 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
                 setHasPropertyMeta(true);
                 setPropertyMeta(data.value);
               } else if (data.type === 'issue') {
-                data.comments = [];
                 if (!hasReset) {
                   setSections({ [data.area]: [data] });
                   hasReset = true;
@@ -191,13 +190,13 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
     }
   };
 
-  // const handleThumb = (issue, isUpvote) => {
-  //   console.log('Thumb action:', isUpvote, issue);
-  // };
+  const handleThumb = (issue, isUpvote) => {
+    console.log('Thumb action:', isUpvote, issue);
+  };
 
   return (
     <div className={styles.container2col}>
-      <div className={styles.searchContainer}>
+      <div className = {styles.searchContainer}>
         <LoadScript
           googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
           libraries={libraries}
@@ -205,7 +204,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
             setMapError('Failed to load Google Maps. Please check your API key.')
           }
         >
-          <div>
+          <div >
             <form onSubmit={handleSubmit} className={styles.searchForm}>
               <Autocomplete
                 className={styles.searchHeader}
@@ -231,7 +230,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
                 <input
                   placeholder="Enter US Address"
                   className={styles.searchInput}
-                  value={address}
+                  value={address} // Bound to state so it updates when queryAddress changes.
                   style={{ width: '100%' }}
                   onChange={(e) => setAddress(e.target.value)}
                 />
@@ -276,11 +275,12 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
 
         {!mapError ? (
           <>
-            {propertyMeta ? (
-              <HouseListingCard listingData={propertyMeta} sections={sections} />
-            ) : (
-              <div className={styles.infoMessage}>Property meta is not available.</div>
-            )}
+            <Dashboard
+              sections={sections}
+              currentHighlights={currentHighlights}
+              setCurrentHighlights={setCurrentHighlights}
+              handleThumb={handleThumb}
+            />
           </>
         ) : (
           <div className={styles.errorMessage}>
@@ -301,11 +301,10 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
       {nitpicks.length > 0 && (
         <div className={styles.savedSection}>
           <h2 className={styles.savedTitle}>Your Saved Listings</h2>
-          <NitpickList
-            nitpicks={nitpicks} 
-            hoveredListingId={hoveredListingId}
-            setHoveredListingId={setHoveredListingId}
-          />
+          <NitpickList nitpicks={nitpicks} 
+                      hoveredListingId={hoveredListingId}
+                      setHoveredListingId={setHoveredListingId}
+           />
         </div>
       )}
     </div>
@@ -334,11 +333,13 @@ export async function getServerSideProps(context) {
   // Transform DB record format to listing format using the reusable function.
   const nitpicks = data.map(transformNitpick);
   
-  const { locale } = context;
-  return {
-    props: { 
-      ...(locale ? await serverSideTranslations(locale, ['common']) : {}),
-      nitpicks 
-    },
-  };
+    const { locale } = context;
+  
+    return {
+      props: { 
+        ...(locale ? await serverSideTranslations(locale, ['common']) : {}),
+  
+        nitpicks 
+      },
+    };
 }

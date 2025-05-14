@@ -19,15 +19,6 @@ const nextConfig = {
     ],
   },
   i18n,
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/nitpick/search',
-        permanent: false,
-      },
-    ];
-  },
   rewrites: async () => {
     return [
       {

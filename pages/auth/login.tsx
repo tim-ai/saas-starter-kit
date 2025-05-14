@@ -239,11 +239,12 @@ export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const { locale } = context;
+  const csrfToken = await getCsrfToken(context);
 
   return {
     props: {
       ...(locale ? await serverSideTranslations(locale, ['common']) : {}),
-      csrfToken: await getCsrfToken(context),
+      csrfToken: csrfToken ?? null,
       authProviders: authProviderEnabled(),
       recaptchaSiteKey: env.recaptcha.siteKey,
     },

@@ -17,7 +17,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [mapCenter, setMapCenter] = useState({ lat: 42.3601, lng: -71.0589 });
   const [zoom, setZoom] = useState(10);
-  const [setMarkerPosition] = useState(null);
+  const [markerPosition, setMarkerPosition] = useState(null);
   const [nitpicks] = useState(serverNitpicks || []);
   const [hoveredListingId, setHoveredListingId] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);

@@ -60,8 +60,8 @@ const Header = () => {
 
                 {/* Changed font-family to Montserrat */}
                 <text x="55" y="32" font-family="Montserrat, Arial, sans-serif" font-size="18" font-weight="800" fill="#374151" text-transform="uppercase" > 
-                    NITPICKER
-                    <tspan fill="#4B5563">.US</tspan> 
+                    NITPICKR
+                    <tspan fill="#4B5563">.NET</tspan> 
                 </text>
               </svg>
           </div>
