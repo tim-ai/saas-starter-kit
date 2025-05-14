@@ -81,7 +81,7 @@ const HomePage: NextPageWithLayout = () => {
                                     <circle cx="25" cy="25" r="10" />
                                     <line x1="32" y1="32" x2="40" y2="40" />
                                 </g>
-                                <text x="55" y="32" fontFamily="Montserrat, Arial, sans-serif" fontSize="18" fontWeight="800" fill="#374151" transform="uppercase">
+                                <text x="55" y="32" fontFamily="Montserrat, Arial, sans-serif" fontSize="18" fontWeight="800" fill="#374151">
                                     NITPICKR
                                     <tspan fill="#4B5563">.NET</tspan>
                                 </text>
@@ -92,7 +92,7 @@ const HomePage: NextPageWithLayout = () => {
                             <a href="#features" className="text-gray-600 hover:text-sky-600 transition-colors">Features</a>
                             <a href="#pricing" className="text-gray-600 hover:text-sky-600 transition-colors">Pricing</a>
                             <a href="#contact" className="text-gray-600 hover:text-sky-600 transition-colors">Contact</a>
-                            <Link href="/auth/login" className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md transition-colors font-medium">Login</Link>
+                            <Link href="/nitpick/search" className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md transition-colors font-medium">Login</Link>
                         </div>
                         <div className="md:hidden">
                             <button id="mobile-menu-button" onClick={toggleMobileMenu} className="text-gray-600 hover:text-sky-600 focus:outline-none">
