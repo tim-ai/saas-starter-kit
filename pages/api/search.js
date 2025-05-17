@@ -47,9 +47,12 @@ export default async function handler(req, res) {
         sqft: listing.area,
         url: listing.url,
         image: listing.image,
-        _geo: listing._geo,
-        lat: listing._geo?.lat,
-        lng: listing._geo?.lng
+        _geo: {
+          lat: parseFloat(listing._geo?.lat),
+          lng: parseFloat(listing._geo?.lng)
+        },
+        lat: parseFloat(listing._geo?.lat),
+        lng: parseFloat(listing._geo?.lng)
       }));
 
       res.status(200).json(listings);

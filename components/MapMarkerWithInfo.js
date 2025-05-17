@@ -64,7 +64,6 @@ export default function MapMarkerWithInfo({
         }
         onLoad={(markerInstance) => {
           markerRef.current = markerInstance;
-          console.log('Marker loaded for listing', listing.id, markerInstance);
         }}
         onUnmount={() => {
           markerRef.current = null;
@@ -85,7 +84,6 @@ export default function MapMarkerWithInfo({
           }}
           onCloseClick={() => {
             setHoveredListingId(null);
-            console.log('InfoWindow closed for listing', listing.address);
             if (infoWindowRef.current) {
               infoWindowRef.current.setMap(null);
               infoWindowRef.current = null;

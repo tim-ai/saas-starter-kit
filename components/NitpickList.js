@@ -1,8 +1,9 @@
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
+import { XCircle } from 'lucide-react'; // Import the XCircle icon
 import styles from './NitpickList.module.css';
 
-export default function NitpickList({ nitpicks, hoveredListingId, setHoveredListingId }) {
+export default function NitpickList({ nitpicks, hoveredListingId, setHoveredListingId, onDeleteFavorite }) {
   const router = useRouter();
 
   const handleClick = (address) => {
@@ -12,6 +13,27 @@ export default function NitpickList({ nitpicks, hoveredListingId, setHoveredList
     });
   };
 
+  // Delete the nitpick record by calling the API, then trigger parent's onDeleteFavorite if desired
+  const handleDeleteFavorite = async (nitpickId, rid) => {
+    try {
+      
+      const res = await fetch(`/api/nitpicks/${nitpickId}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error(data.error);
+      }
+      // No matter what call parent's deletion handler to update UI
+      if (onDeleteFavorite) {
+        onDeleteFavorite(rid);
+      }
+
+    } catch (error) {
+      console.error('Failed to delete nitpick:', error);
+    }
+  };
+
   return (
     <div className={styles.listContainer}>
       {nitpicks.map((nitpick) => (
@@ -19,7 +41,6 @@ export default function NitpickList({ nitpicks, hoveredListingId, setHoveredList
           key={nitpick.address}
           onMouseEnter={(e) => {
             setHoveredListingId(nitpick.id);
-            // Find the cardInner element within this card
             const cardInner = e.currentTarget.querySelector(`.${styles.cardInner}`);
             if (cardInner) {
               cardInner.style.transform = 'rotateY(180deg)';
@@ -32,13 +53,13 @@ export default function NitpickList({ nitpicks, hoveredListingId, setHoveredList
               cardInner.style.transform = 'rotateY(0deg)';
             }
           }}
-          onClick={() => handleClick(nitpick.address)}
+          onClick={() => 
+            console.error('Clicked nitpick:', nitpick.address) ||
+            handleClick(nitpick.address)}
           className={`${styles.card} ${hoveredListingId === nitpick.id ? styles.highlighted : ''}`}
         >
-          
           <div className={styles.cardInner}>
-            {/* Front side (default view) */}
-            <div className={styles.cardFace + " " + styles.cardFront}>
+            <div className={`${styles.cardFace} ${styles.cardFront}`}>
               <img
                 src={nitpick.image}
                 alt={nitpick.address}
@@ -51,8 +72,20 @@ export default function NitpickList({ nitpicks, hoveredListingId, setHoveredList
                 <div className={styles.town}>{nitpick.town}</div>
               </div>
             </div>
-            {/* Back side (hover view) */}
-            <div className={styles.cardFace + " " + styles.cardBack}>
+            <div className={`${styles.cardFace} ${styles.cardBack}`}>
+              <button
+                className={styles.deleteMark}
+                onClick={(e) => {
+                  // log the nitpick ID and address
+                  console.error('Deleting nitpick:', nitpick.nid, nitpick.address);
+                  e.stopPropagation();
+                  // call delete function with realestate ID instead of nitpick ID
+                  handleDeleteFavorite(nitpick.nid, nitpick.id);
+                }}
+              >
+                <XCircle size={20} color="#ef4444" />
+              </button>
+
               <h3>{nitpick.address}</h3>
               <p>
                 {nitpick.town}, {nitpick.state}
@@ -88,4 +121,7 @@ NitpickList.propTypes = {
       createdAt: PropTypes.string.isRequired,
     })
   ).isRequired,
+  hoveredListingId: PropTypes.string,
+  setHoveredListingId: PropTypes.func.isRequired,
+  onDeleteFavorite: PropTypes.func,
 };

@@ -4,6 +4,7 @@ import {
   FolderPlusIcon,
   RectangleStackIcon,
   UserCircleIcon,
+  CodeBracketIcon
 } from '@heroicons/react/24/outline';
 import useTeams from 'hooks/useTeams';
 import { useSession } from 'next-auth/react';
@@ -61,6 +62,13 @@ const TeamDropdown = () => {
           name: t('new-team'),
           href: '/teams?newTeam=true',
           icon: FolderPlusIcon,
+        },
+        {
+          id: 'all-products',
+          name: t('all-products'),
+          href: `/teams/${currentTeam?.slug}/products`,
+          icon: CodeBracketIcon,
+          active: true,
         },
       ],
     },

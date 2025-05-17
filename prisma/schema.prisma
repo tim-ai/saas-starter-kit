@@ -83,6 +83,8 @@ model Team {
   members         TeamMember[]
   invitations     Invitation[]
   apiKeys         ApiKey[]
+  nitpicks        Nitpick[]    // new relation field: get nitpicks associated with this team
+  isDefault       Boolean      @default(false) // mark default team created during registration
 
   @@index([billingId])
 }
@@ -304,12 +306,15 @@ model Nitpick {
   id           String     @id @default(uuid())
   userId       String
   realEstateId String
+  teamId       String
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
   realEstate RealEstate @relation(fields: [realEstateId], references: [id], onDelete: Cascade)
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team       Team       @relation(fields: [teamId], references: [id])
 
   @@index([userId])
   @@index([realEstateId])
+  @@index([teamId])
 }

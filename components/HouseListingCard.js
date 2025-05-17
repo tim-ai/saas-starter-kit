@@ -332,8 +332,8 @@ const HouseListingCard = ({ listingData, sections, currentUser: propCurrentUser 
         />
         <button 
           onClick={toggleListingLike} 
-          disabled={listingData.status !== 'Active' && !listingData.status.startsWith('FOR SALE')}
-          className={`absolute top-4 right-4 p-2 rounded-full transition-colors duration-200 ${listingLiked ? 'bg-red-500 text-white' : 'bg-white/80 text-red-500 hover:bg-white'} ${listingData.status !== 'Active' ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={listingData?.status !== 'Active' && !listingData?.status?.startsWith('FOR SALE')}
+          className={`absolute top-4 right-4 p-2 rounded-full transition-colors duration-200 ${listingLiked ? 'bg-red-500 text-white' : 'bg-white/80 text-red-500 hover:bg-white'} ${listingData?.status !== 'Active' ? 'opacity-50 cursor-not-allowed' : ''}`}
           aria-label={listingLiked ? 'Unlike listing' : 'Like listing'}
         >
           <Heart size={24} fill={listingLiked ? 'currentColor' : 'none'} />
@@ -370,7 +370,7 @@ const HouseListingCard = ({ listingData, sections, currentUser: propCurrentUser 
             <FaExpand /> {listingData.sqft} sqft
           </span>
         </div>
-        {listingData.status !== 'Active' && !listingData.status.startsWith('FOR SALE') && (
+        {listingData.status !== 'Active' && !listingData.status?.startsWith('FOR SALE') && (
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-md text-sm flex items-center">
             <InfoIcon size={20} className="mr-2 flex-shrink-0"/>
             This listing is currently not available for offers.

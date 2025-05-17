@@ -31,7 +31,8 @@ export default async function handler(req, res) {
     const realEstates = await prisma.$queryRaw`
       SELECT r.*, 
              MIN(CASE WHEN n."userId" = ${userId} THEN 0 ELSE 1 END) AS "userFlag",
-             MAX(n."createdAt") AS "lastCreated"
+             MAX(n."createdAt") AS "lastCreated",
+             MAX(n.id) AS "nid"
       FROM "Nitpick" n
       INNER JOIN "RealEstate" r ON n."realEstateId" = r.id
       GROUP BY r.id

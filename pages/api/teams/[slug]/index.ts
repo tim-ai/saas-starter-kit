@@ -119,6 +119,10 @@ const handleDELETE = async (req: NextApiRequest, res: NextApiResponse) => {
 
   throwIfNotAllowed(user, 'team', 'delete');
 
+  if (user.team.isDefault) {
+    throw new ApiError(400, 'You cannot delete the default team.');
+  }
+  
   await deleteTeam({ id: user.team.id });
 
   sendAudit({

@@ -98,3 +98,16 @@
   font-size: 0.8rem;
   margin-top: 4px;
 }
+
+.deleteMark {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #ef4444; /* red */
+  z-index: 10;
+}

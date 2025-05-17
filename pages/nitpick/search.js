@@ -18,7 +18,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const [mapCenter, setMapCenter] = useState({ lat: 42.3601, lng: -71.0589 });
   const [zoom, setZoom] = useState(10);
   const [markerPosition, setMarkerPosition] = useState(null);
-  const [nitpicks] = useState(serverNitpicks || []);
+  const [nitpicks, setNitpicks] = useState(serverNitpicks || []);
   const [hoveredListingId, setHoveredListingId] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -91,10 +91,10 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
       listings
         .filter(
           (listing) =>
-            listing?.lat &&
-            listing?.lng &&
-            !isNaN(listing.lat) &&
-            !isNaN(listing.lng)
+            listing?._geo?.lat &&
+            listing?._geo?.lng &&
+            !isNaN(listing._geo.lat) &&
+            !isNaN(listing._geo.lng)
         )
         .map((listing) => (
           <MapMarkerWithInfo
@@ -167,11 +167,17 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
 
       {nitpicks.length > 0 && (
         <div className={styles.savedSection}>
-          <h2 className={styles.savedTitle}>Your Saved Listings</h2>
+          <h2 className={styles.savedTitle}>Your Favorite</h2>
           <NitpickList
             nitpicks={nitpicks}
             hoveredListingId={hoveredListingId}
             setHoveredListingId={setHoveredListingId}
+            onDeleteFavorite={(nitpickId) => {
+              setNitpicks((prevNitpicks) =>
+                prevNitpicks.filter((nitpick) => nitpick.id !== nitpickId)
+              );
+
+            }}
           />
         </div>
       )}

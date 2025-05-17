@@ -43,6 +43,7 @@ const UserNavigation = ({ activePathname }: NavigationProps) => {
       icon: RectangleStackIcon,
       active: activePathname === '/teams',
     },
+    
   ];
 
   return <NavigationItems menus={menus} />;

@@ -1,11 +1,12 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaHeart } from 'react-icons/fa';
 import styles from './ActivePropertyCard.module.css';
 
 export default function ActivePropertyCard({ listing, imgHeight, highlighted }) {
   const router = useRouter();
   const [hovered, setHovered] = useState(false);
+  const [favorited, setFavorited] = useState(false);
 
   const handleInspect = () => {
     if (router.asPath.endsWith('/search')) {
@@ -19,7 +20,28 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted }) 
     }
   };
 
-  // If listing.price is a number, format it; otherwise, just use it as is.
+  const handleFavorite = async (e) => {
+    // Prevent the click from triggering the card's onClick event.
+    e.stopPropagation();
+    try {
+      const res = await fetch('/api/nitpicks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Adjust the property used for the real estate identifier as needed.
+        body: JSON.stringify({ realEstateId: listing.id }),
+      });
+      if (res.ok) {
+        setFavorited(true);
+        console.log('Added to favorites');
+      } else {
+        console.error('Failed to add favorite');
+      }
+    } catch (err) {
+      console.error('Error adding favorite:', err);
+    }
+  };
+
+  // Format listing.price if it's a number.
   const formattedPrice =
     typeof listing.price === 'number'
       ? new Intl.NumberFormat('en-US', {
@@ -50,7 +72,7 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted }) 
             height: imgHeight,
             objectFit: 'cover',
             margin: '0 auto',
-            width: '100%'
+            width: '100%',
           }}
         />
       </a>
@@ -61,8 +83,13 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted }) 
         <div className={styles.price}>{formattedPrice}</div>
       </div>
       {hovered && (
-        <div className={styles.inspectOverlay} onClick={handleInspect}>
-          <FaSearch className={styles.inspectIcon} />
+        <div className={styles.inspectOverlay}>
+          <FaHeart
+            className={styles.favoriteIcon}
+            onClick={handleFavorite}
+            style={{ color: favorited ? '#EF4444' : '#ccc', marginRight: '8px', cursor: 'pointer' }}
+          />
+          <FaSearch className={styles.inspectIcon} onClick={handleInspect} />
         </div>
       )}
     </div>
