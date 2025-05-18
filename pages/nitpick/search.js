@@ -7,10 +7,17 @@ import NitpickList from '../../components/NitpickList';
 import MapMarkerWithInfo from '../../components/MapMarkerWithInfo';
 import ListingsGrid from '../../components/ListingsGrid';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useSession } from 'next-auth/react';
+import { toggleFavorite } from '@/lib/favorite';
+
+
 // Define libraries outside the component
 const libraries = ['places'];
 
 export default function Map3D({ nitpicks: serverNitpicks }) {
+  const { data: session } = useSession();
+  const userId = session?.user?.id || null;
+
   const [searchTerm, setSearchTerm] = useState('');
   const [listings, setListings] = useState([]);
   const [mapError, setMapError] = useState(null);
@@ -23,6 +30,8 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [loading, setLoading] = useState(false);
   const submitButtonRef = useRef(null);
+
+
 
   const mapContainerStyle = {
     width: '100%',
@@ -71,8 +80,14 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
         setLoading(false);
         return;
       }
-      setListings(response.data);
-      const first = response.data[0];
+      // check if a listing belongs to the nitpicks and set listing.isFavorite accordingly
+      const listings = response.data.map((listing) => ({
+        ...listing,
+        isFavorite: nitpicks.some((nitpick) => nitpick.id === listing.id),
+      }));
+      
+      setListings(listings);
+      const first = listings[0];
       setMapCenter({ lat: first.lat, lng: first.lng });
       setZoom(12);
       setMarkerPosition({ lat: first.lat, lng: first.lng });
@@ -104,6 +119,20 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
             setHoveredListingId={setHoveredListingId}
             hoverTimeout={hoverTimeout}
             setHoverTimeout={setHoverTimeout}
+            onFavorite = {
+              async (listing) => {
+                if (!userId) {
+                  console.error('User not logged in!');
+                  return;
+                }
+                try {
+                  await toggleFavorite(listing, nitpicks, setNitpicks, userId);
+                } catch (error) {
+                  console.error(error);
+                }
+              }
+            }
+            linkType="nitpick"
           />
         )),
     [listings, hoveredListingId, hoverTimeout]
@@ -162,6 +191,17 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
           listings={listings}
           hoveredListingId={hoveredListingId}
           setHoveredListingId={setHoveredListingId}
+          onFavorite={async (listing) => {
+            if (!userId) {
+              console.error('User not logged in!');
+              return;
+            }
+            try {
+              await toggleFavorite(listing, nitpicks, setNitpicks, userId);
+            } catch (error) {
+              console.error(error);
+            }
+          }}
         />
       </div>
 
@@ -212,7 +252,6 @@ export async function getServerSideProps(context) {
 
   const { transformNitpick } = require('@/lib/nitpick');
   const nitpicks = data.map(transformNitpick);
-
   const { locale } = context;
 
   return {

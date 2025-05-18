@@ -8,6 +8,8 @@ export default function MapMarkerWithInfo({
   setHoveredListingId,
   hoverTimeout,
   setHoverTimeout,
+  onFavorite,
+  linkType = 'listing', // new input flag: "nitpick" or "listing"
 }) {
   const isHovered = String(hoveredListingId) === String(listing.id);
   const markerRef = useRef(null);
@@ -46,11 +48,20 @@ export default function MapMarkerWithInfo({
     scheduleClose();
   };
 
+  const handleMarkerClick = () => {
+    if (linkType === 'nitpick') {
+      const url = `/nitpick?address=${encodeURIComponent(listing.address)}`;
+      window.open(url, '_blank');
+    } else {
+      window.open(listing.url, '_blank');
+    }
+  };
+
   return (
     <>
       <MarkerF
         position={{ lat: listing._geo.lat, lng: listing._geo.lng }}
-        key = {listing.address}
+        key={listing.address}
         icon={
           isHovered
             ? {
@@ -70,7 +81,7 @@ export default function MapMarkerWithInfo({
         }}
         onMouseOver={handleMarkerMouseOver}
         onMouseOut={handleMarkerMouseOut}
-        onClick={() => window.open(listing.url, '_blank')}
+        onClick={handleMarkerClick}
       />
 
       {isHovered && markerRef.current && (
@@ -79,7 +90,6 @@ export default function MapMarkerWithInfo({
           options={{
             pixelOffset: new window.google.maps.Size(0, 20),
             disableAutoPan: true,
-            //headerDisabled: true,
             closeBoxURL: '',
           }}
           onCloseClick={() => {
@@ -92,9 +102,7 @@ export default function MapMarkerWithInfo({
           onLoad={(infoWindow) => {
             infoWindowRef.current = infoWindow;
           }}
-          onMouseEnter={() => {
-            handleInfoBoxMouseEnter();
-          }}
+          onMouseEnter={handleInfoBoxMouseEnter}
           onUnmount={() => {
             setHoveredListingId(null);
           }}
@@ -116,6 +124,7 @@ export default function MapMarkerWithInfo({
               listing={listing}
               imgHeight="180px"
               highlighted
+              onFavorite={onFavorite}
             />
           </div>
         </InfoBoxF>

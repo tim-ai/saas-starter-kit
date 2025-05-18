@@ -6,7 +6,9 @@ import PropertyCard from '../../components/PropertyCard';
 import NitpickList from '../../components/NitpickList';
 import styles from './index.module.css';
 import { transformNitpick } from '@/lib/nitpick';
+import { toggleFavorite } from '@/lib/favorite';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useSession } from 'next-auth/react';
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -26,7 +28,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
   const [propertyMeta, setPropertyMeta] = useState(null);
   const [sections, setSections] = useState({});
   const [loading, setLoading] = useState(false);
-  const [nitpicks] = useState(serverNitpicks || []);
+  const [nitpicks, setNitpicks] = useState(serverNitpicks || []);
   // const [currentHighlights, setCurrentHighlights] = useState(new Set());
   const [autocomplete, setAutocomplete] = useState(null);
   const [mapError, setMapError] = useState(null);
@@ -37,6 +39,9 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
 
   // Button ref for simulating the click
   const submitButtonRef = useRef(null);
+
+  const { data: session } = useSession();
+  const userId = session?.user?.id || null;
 
   // Update address when query param changes so the input reflects it
   useEffect(() => {
@@ -132,8 +137,12 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
               try {
                 const data = JSON.parse(buffer);
                 if (data.type === 'information' && data.source === 'property_meta') {
+                  const meta = {
+                    ...data.value,
+                    isFavorite: nitpicks.some((nitpick) => nitpick.id === data.value.id),
+                  }
                   setHasPropertyMeta(true);
-                  setPropertyMeta(data.value);
+                  setPropertyMeta(meta);
                 } else if (data.type === 'issue') {
                   data.comments = [];
                   if (!hasReset) {
@@ -160,8 +169,13 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
             try {
               const data = JSON.parse(line);
               if (data.type === 'information' && data.source === 'property_meta') {
+                const meta = {
+                    ...data.value,
+                    isFavorite: nitpicks.some((nitpick) => nitpick.id === data.value.id),
+                }
                 setHasPropertyMeta(true);
-                setPropertyMeta(data.value);
+                setPropertyMeta(meta);
+
               } else if (data.type === 'issue') {
                 data.comments = [];
                 if (!hasReset) {
@@ -247,7 +261,8 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
             </form>
           </div>
           <div className={styles.mapContainer} data-columns={hasPropertyMeta ? '2' : '1'}>
-            {hasPropertyMeta && (
+            {
+            hasPropertyMeta && (
               <div className={styles.propertyCardContainer}>
                 <PropertyCard listing={propertyMeta} imgHeight="300px" />
               </div>
@@ -277,7 +292,21 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
         {!mapError ? (
           <>
             {propertyMeta ? (
-              <HouseListingCard listingData={propertyMeta} sections={sections} />
+              <HouseListingCard 
+              listingData={propertyMeta} 
+              sections={sections} 
+              currentUser={userId} 
+              onFavorite={async (listing) => {
+                if (!userId) {
+                  console.error('User not logged in!');
+                  return;
+                }
+                try {
+                  await toggleFavorite(listing, nitpicks, setNitpicks, userId);
+                } catch (error) {
+                  console.error(error);
+                }
+              }} />
             ) : (
               <div className={styles.infoMessage}>Property meta is not available.</div>
             )}

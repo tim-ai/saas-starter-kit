@@ -2,7 +2,7 @@ import React from 'react';
 import ActivePropertyCard from './ActivePropertyCard';
 import styles from './ListingsGrid.module.css';
 
-export default function ListingsGrid({ listings, hoveredListingId, setHoveredListingId }) {
+export default function ListingsGrid({ listings, hoveredListingId, setHoveredListingId, onFavorite }) {
   return (
     <div className={styles.listingsGrid}>
       {listings.map((listing) => (
@@ -17,6 +17,7 @@ export default function ListingsGrid({ listings, hoveredListingId, setHoveredLis
             listing={listing} 
             imgHeight="280px" 
             highlighted={hoveredListingId === listing.id} 
+            onFavorite={onFavorite}
           />
         </div>
       ))}

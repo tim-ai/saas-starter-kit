@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { FaSearch, FaHeart } from 'react-icons/fa';
 import styles from './ActivePropertyCard.module.css';
 
-export default function ActivePropertyCard({ listing, imgHeight, highlighted }) {
+export default function ActivePropertyCard({ listing, imgHeight, highlighted, onFavorite }) {
   const router = useRouter();
+  // Initialize favorited based on listing.isFavorite (or false if absent)
+  const [favorited, setFavorited] = useState(!!listing.isFavorite);
   const [hovered, setHovered] = useState(false);
-  const [favorited, setFavorited] = useState(false);
 
   const handleInspect = () => {
     if (router.asPath.endsWith('/search')) {
@@ -23,18 +24,25 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted }) 
   const handleFavorite = async (e) => {
     // Prevent the click from triggering the card's onClick event.
     e.stopPropagation();
+    setFavorited((prev) => !prev);
+
     try {
-      const res = await fetch('/api/nitpicks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // Adjust the property used for the real estate identifier as needed.
-        body: JSON.stringify({ realEstateId: listing.id }),
-      });
-      if (res.ok) {
-        setFavorited(true);
-        console.log('Added to favorites');
+      if (onFavorite) {
+        // Call the passed-in callback and update the heart state based on response.
+        await onFavorite(listing);
       } else {
-        console.error('Failed to add favorite');
+        // Alternative: If no callback is provided, fallback to an API call.
+        const res = await fetch('/api/nitpicks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ realEstateId: listing.id }),
+        });
+        if (res.ok) {
+          setFavorited(true);
+          console.log('Added to favorites');
+        } else {
+          console.error('Failed to add favorite');
+        }
       }
     } catch (err) {
       console.error('Error adding favorite:', err);
@@ -80,14 +88,37 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted }) 
         <a href={listing.url} target="_blank" rel="noopener noreferrer">
           <h3>{listing.address}</h3>
         </a>
-        <div className={styles.price}>{formattedPrice}</div>
-      </div>
-      {hovered && (
-        <div className={styles.inspectOverlay}>
           <FaHeart
             className={styles.favoriteIcon}
             onClick={handleFavorite}
-            style={{ color: favorited ? '#EF4444' : '#ccc', marginRight: '8px', cursor: 'pointer' }}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              fontSize: '28px',
+              color: favorited ? '#EF4444' : '#ccc',
+              cursor: 'pointer',
+              zIndex: 10,
+            }}
+          />
+        <div className={styles.price}>{formattedPrice}</div>
+        
+      </div>
+      {hovered && (
+        <div className={styles.inspectOverlay}>
+          {/* Favorite Heart Icon in the upper right corner */}
+          <FaHeart
+            className={styles.favoriteIcon}
+            onClick={handleFavorite}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              fontSize: '28px',
+              color: favorited ? '#EF4444' : '#ccc',
+              cursor: 'pointer',
+              zIndex: 10,
+            }}
           />
           <FaSearch className={styles.inspectIcon} onClick={handleInspect} />
         </div>

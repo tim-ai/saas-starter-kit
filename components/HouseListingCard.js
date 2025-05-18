@@ -4,7 +4,7 @@ import {
    DollarSign, MapPin, AlertTriangle, Info as InfoIcon, XCircle, Snowflake, Flame,
   CookingPot, Droplet, Wrench, Plug, Home, ShieldAlert, LayoutGrid, Car, Users, TrendingUp
 } from 'lucide-react';
-import { FaBed, FaBath, FaExpand } from 'react-icons/fa';
+import { FaBed, FaBath, FaExpand, FaHeart } from 'react-icons/fa';
 
 
 // --- Constants ---
@@ -260,8 +260,8 @@ const CategoryTile = ({ categoryName, concerns, currentUser, noop }) => {
           <Icon className="w-14 h-14 text-blue-600 group-hover:text-blue-700 transition-colors p-2.5" />
           <span className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full ${SEVERITY_CLASSES[severity]} ring-2 ring-white`} />
         </div>
-        <span className="text-xs font-medium text-gray-700 text-center group-hover:text-blue-800">
-          {categoryName}
+        <span className="text-xs text-gray-700 text-center group-hover:text-blue-800">
+          {concerns[0]?.problem || 'No issues noted yet.'}
         </span>
         {isHovered && (
           <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
@@ -290,27 +290,38 @@ const CategoryTile = ({ categoryName, concerns, currentUser, noop }) => {
 };
 
 // --- Main Component ---
-const HouseListingCard = ({ listingData, sections, currentUser: propCurrentUser }) => {
-  const currentUser = propCurrentUser || DEFAULT_CURRENT_USER;
-  
+export default function HouseListingCard({ listingData, currentUser, onFavorite, ...props }) {
+  // Initialize the liked state based on available data
+  const [listingLiked, setListingLiked] = useState(!!listingData.isFavorite);
+
+  // Toggle favorite state and call the onFavorite callback if provided.
+  const toggleListingLike = async (e) => {
+    e.stopPropagation();
+    // Optimistically update UI.
+    setListingLiked((prev) => !prev);
+
+    try {
+      if (onFavorite) {
+        await onFavorite(listingData);
+      }
+    } catch (error) {
+      console.error('Error processing favorite:', error);
+      // Revert the UI change on error.
+      setListingLiked((prev) => !prev);
+    }
+  };
+
   // State for description expansion
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [listingLiked, setListingLiked] = useState(listingData.isLikedInitial || false);
   
   // Use the passed-in sections (instead of local concerns state)
-  const externalSections = sections || {}; // defaults to empty object if sections is falsy
+  const externalSections = props.sections || {}; // defaults to empty object if sections is falsy
   const visibleCategories = useMemo(() => {
     return Object.keys(externalSections).filter(catName => (externalSections[catName] || []).length > 0);
   }, [externalSections]);
   
   // No-op functions for issue manipulation – update these as needed to integrate with external state management.
   const noop = useCallback(() => {}, []);
-  
-  const toggleListingLike = useCallback(() => {
-    if (listingData.status !== 'Active') return;
-    setListingLiked(prev => !prev);
-    // API call to update listing like status would go here.
-  }, [listingData.status]);
 
   const getStatusColor = (status) => {
     if (status === 'Active' || (status && status.startsWith('FOR SALE'))) return 'bg-green-100 text-green-700';
@@ -320,27 +331,31 @@ const HouseListingCard = ({ listingData, sections, currentUser: propCurrentUser 
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-lg my-8 font-sans">
-      {/* Image and Like Button */}
+    <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-lg my-8 font-sans relative">
+      {/* Image Section with Favorite Heart Button */}
       <div className="relative">
         <img 
           src={listingData.image || 'https://placehold.co/600x400/E2E8F0/slate-900?text=Property+Image'} 
           alt={`Image of ${listingData.address}`} 
           onClick={() => window.open(listingData.url, '_blank')}
-          className="w-full h-64 sm:h-72 md:h-80 object-cover font-size-sm"
+          className="w-full h-64 sm:h-72 md:h-80 object-cover"
           onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x400/E2E8F0/slate-900?text=Image+Error'; }} 
         />
-        <button 
-          onClick={toggleListingLike} 
-          disabled={listingData?.status !== 'Active' && !listingData?.status?.startsWith('FOR SALE')}
-          className={`absolute top-4 right-4 p-2 rounded-full transition-colors duration-200 ${listingLiked ? 'bg-red-500 text-white' : 'bg-white/80 text-red-500 hover:bg-white'} ${listingData?.status !== 'Active' ? 'opacity-50 cursor-not-allowed' : ''}`}
-          aria-label={listingLiked ? 'Unlike listing' : 'Like listing'}
-        >
-          <Heart size={24} fill={listingLiked ? 'currentColor' : 'none'} />
-        </button>
+          <FaHeart
+            onClick={toggleListingLike}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              fontSize: '28px',
+              color: listingLiked ? '#EF4444' : '#ccc',
+              cursor: 'pointer',
+              zIndex: 10,
+            }}
+          />
       </div>
 
-      {/* Main Details */}
+      {/* Rest of the HouseListingCard content */}
       <div className="p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
           <div>
@@ -423,4 +438,3 @@ const HouseListingCard = ({ listingData, sections, currentUser: propCurrentUser 
   );
 };
 
-export default HouseListingCard;

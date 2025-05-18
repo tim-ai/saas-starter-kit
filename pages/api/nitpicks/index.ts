@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
+import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // Check user session and extract the user id
-  const session = await getSession({ req });
+  const session = await getSession(req, res);
   if (!session || !session.user || !session.user.id) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
