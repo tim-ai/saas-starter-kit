@@ -31,7 +31,6 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
   const [sections, setSections] = useState({});
   const [loading, setLoading] = useState(false);
   const [nitpicks, setNitpicks] = useState(serverNitpicks || []);
-  // const [currentHighlights, setCurrentHighlights] = useState(new Set());
   const [autocomplete, setAutocomplete] = useState(null);
   const [mapError, setMapError] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 42.3601, lng: -71.0589 });
@@ -40,18 +39,14 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
   const [hoveredListingId, setHoveredListingId] = useState(null);
 
   const currentTeamId = getCookie('currentTeamId') || null;
-
-  // Button ref for simulating the click
   const submitButtonRef = useRef(null);
-
   const { data: session } = useSession();
   const userId = session?.user?.id || null;
 
-  // Update address when query param changes so the input reflects it
+  // Update address when query param changes so the input reflects it.
   useEffect(() => {
     if (queryAddress) {
       setAddress(queryAddress);
-      // Simulate a click on the submit button after a short delay.
       setTimeout(() => {
         if (submitButtonRef.current) {
           submitButtonRef.current.click();
@@ -63,10 +58,8 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!address.trim()) return;
-    console.log('Submitting address:', address);
     setLoading(true);
     let hasReset = false;
-
     try {
       let place;
       if (autocomplete) {
@@ -125,11 +118,9 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
         const errorMsg = await response.text();
         setMapError(errorMsg);
         setLoading(false);
-        console.error('Error from API:', errorMsg);
         return;
       }
 
-      // Read the streaming response
       const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
       let buffer = '';
 
@@ -144,7 +135,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
                   const meta = {
                     ...data.value,
                     isFavorite: nitpicks.some((nitpick) => nitpick.id === data.value.id),
-                  }
+                  };
                   setHasPropertyMeta(true);
                   setPropertyMeta(meta);
                 } else if (data.type === 'issue') {
@@ -174,12 +165,11 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
               const data = JSON.parse(line);
               if (data.type === 'information' && data.source === 'property_meta') {
                 const meta = {
-                    ...data.value,
-                    isFavorite: nitpicks.some((nitpick) => nitpick.id === data.value.id),
-                }
+                  ...data.value,
+                  isFavorite: nitpicks.some((nitpick) => nitpick.id === data.value.id),
+                };
                 setHasPropertyMeta(true);
                 setPropertyMeta(meta);
-
               } else if (data.type === 'issue') {
                 if (!hasReset) {
                   setSections({ [data.area]: [data] });
@@ -207,10 +197,6 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
       setLoading(false);
     }
   };
-
-  // const handleThumb = (issue, isUpvote) => {
-  //   console.log('Thumb action:', isUpvote, issue);
-  // };
 
   return (
     <div className={styles.container2col}>
@@ -263,39 +249,13 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
               </button>
             </form>
           </div>
-          <div className={styles.mapContainer} data-columns={hasPropertyMeta ? '2' : '1'}>
-            {
-            hasPropertyMeta && (
-              <div className={styles.propertyCardContainer}>
-                <PropertyCard listing={propertyMeta} imgHeight="300px" />
-              </div>
-            )}
-            <div className={styles.mapWrapper}>
-              <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                zoom={14}
-                center={mapCenter}
-                options={{ disableDefaultUI: true }}
-                onLoad={(map) => setMapInstance(map)}
-              >
-                {markerPosition && (
-                  <Marker
-                    position={markerPosition}
-                    icon={{
-                      url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                      scaledSize: new window.google.maps.Size(40, 40),
-                    }}
-                  />
-                )}
-              </GoogleMap>
-            </div>
-          </div>
-        </LoadScript>
 
-        {!mapError ? (
-          <>
-            {propertyMeta ? (
-              <HouseListingCard 
+          {/*
+            If propertyMeta has been updated with actual property data, display HouseListingCard.
+            Otherwise, keep displaying the map container.
+          */}
+          {propertyMeta ? (
+            <HouseListingCard 
               listingData={propertyMeta} 
               sections={sections} 
               currentUser={userId} 
@@ -309,12 +269,38 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
                 } catch (error) {
                   console.error(error);
                 }
-              }} />
-            ) : (
-              <div className={styles.infoMessage}>Property meta is not available.</div>
-            )}
-          </>
-        ) : (
+              }} 
+            />
+          ) : (
+            <div className={styles.mapContainer}>
+              <div className={styles.mapWrapper}>
+                <GoogleMap
+                  mapContainerStyle={mapContainerStyle}
+                  zoom={14}
+                  center={mapCenter}
+                  options={{ disableDefaultUI: true }}
+                  onLoad={(map) => setMapInstance(map)}
+                >
+                  {markerPosition && (
+                    <Marker
+                      position={markerPosition}
+                      icon={{
+                        url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                        scaledSize: new window.google.maps.Size(40, 40),
+                      }}
+                    />
+                  )}
+                </GoogleMap>
+              </div>
+            </div>
+          )}
+        </LoadScript>
+
+        {!mapError && !propertyMeta && (
+          <div className={styles.infoMessage}>No property meta available.</div>
+        )}
+
+        {mapError && (
           <div className={styles.errorMessage}>
             {mapError}
             <button
@@ -338,10 +324,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
             hoveredListingId={hoveredListingId}
             setHoveredListingId={setHoveredListingId}
             onDeleteFavorite={(rid) => {
-              console.log('Deleting realestate:', rid);
-              setNitpicks((prev) => (
-                prev.filter((listing) => listing.id !== rid)
-              ));
+              setNitpicks((prev) => prev.filter((listing) => listing.id !== rid));
             }}
           />
         </div>
@@ -350,13 +333,11 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
   );
 }
 
-// Server-side fetching and transformation of nitpicks records.
 export async function getServerSideProps(context) {
   const protocol = context.req.headers['x-forwarded-proto'] || 'http';
   const host = context.req.headers.host;
   const teamId = context.req.cookies.currentTeamId;
   
-  // Fetch from the internal /api/history endpoint. The cookie header is passed for auth.
   const historyResponse = await fetch(`${protocol}://${host}/api/history?team=${teamId}`, {
     method: 'POST',
     headers: { 
@@ -370,9 +351,7 @@ export async function getServerSideProps(context) {
     data = await historyResponse.json();
   }
   
-  // Transform DB record format to listing format using the reusable function.
   const nitpicks = data.map(transformNitpick);
-  
   const { locale } = context;
   return {
     props: { 

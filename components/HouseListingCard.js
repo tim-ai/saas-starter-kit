@@ -229,7 +229,8 @@ const CategoryTile = ({ categoryName, concerns, currentUser, activeCommentInput,
   // Inline style for glowing effect using CSS variable and animation
   const glowStyle = {
     '--glow-color': severityGlowMap[severity],
-    animation: 'glow 2s ease-in-out infinite'
+    boxShadow: `0 0 5px 2px var(--glow-color)`,
+    // animation: 'glow 2s ease-in-out infinite'
   };
 
   return (
@@ -334,7 +335,7 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-lg my-8 font-sans relative">
+    <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-lg my-8 font-sans relative">
       {/* Image Section with Favorite Heart Button */}
       <div className="relative">
         <img 
@@ -371,13 +372,15 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
               {listingData.price ? listingData.price.toLocaleString('en-US') : 'Price not available'}
             </p>
           </div>
-          <div className={`mt-2 sm:mt-0 self-start px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(listingData.status)}`}>
-            Status: {listingData.status || 'Unknown'}
-            
+          <div className={`mt-2 sm:mt-0 text-xs self-start px-3 py-1 font-medium rounded-full whitespace-nowrap ${getStatusColor(listingData.status)}`}>
+              Status: {listingData.status || 'Unknown'}
           </div>
 
         </div>
         <div className={"flex justify-between text-gray-600"}>
+          <span className="text-xs">
+            Year Built: {listingData.year_built || 'Unknown'}
+          </span>
           <span className="text-xs">
             <FaBed /> {listingData.beds}
           </span>
@@ -387,6 +390,7 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
           <span className="text-xs">
             <FaExpand /> {listingData.sqft} sqft
           </span>
+
         </div>
         {listingData.status !== 'Active' && !listingData.status?.startsWith('FOR SALE') && (
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-md text-sm flex items-center">
