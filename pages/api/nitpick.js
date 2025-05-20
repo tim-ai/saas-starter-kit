@@ -1,4 +1,5 @@
 import { getSession } from '@/lib/session';
+import { getCookie } from 'cookies-next';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -31,11 +32,13 @@ export default async function handler(req, res) {
     return;
   }
   const userId = session?.user.id;
+  const teamId = await getCookie('currentTeamId', {req, res});
+  console.error('-------------teamId', teamId);
 
   // Read backend host and port from environment variables
   const aiserverIp = process.env.AISERVER_IP || '127.0.0.1';
   const aiserverPort = process.env.AISERVER_PORT || '9090';
-  const targetUrl = `http://${aiserverIp}:${aiserverPort}/api/streaming/nitpick?user=${userId}&address=${encodeURIComponent(address)}&lat=${lat}&lng=${lng}`;
+  const targetUrl = `http://${aiserverIp}:${aiserverPort}/api/streaming/nitpick?user=${userId}&address=${encodeURIComponent(address)}&lat=${lat}&lng=${lng}&teamId=${teamId}`;
 
   const abortController = new AbortController();
 

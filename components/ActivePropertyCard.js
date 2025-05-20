@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { FaSearch, FaHeart } from 'react-icons/fa';
 import styles from './ActivePropertyCard.module.css';
+import { getCookie } from 'cookies-next';
 
 export default function ActivePropertyCard({ listing, imgHeight, highlighted, onFavorite }) {
   const router = useRouter();
@@ -9,6 +10,7 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted, on
   const [favorited, setFavorited] = useState(!!listing.isFavorite);
   const [hovered, setHovered] = useState(false);
 
+  const teamId = getCookie('currentTeamId');
   const handleInspect = () => {
     if (router.asPath.endsWith('/search')) {
       const urlWithQuery = `${window.location.origin}/nitpick?address=${encodeURIComponent(listing.address)}`;
@@ -32,7 +34,7 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted, on
         await onFavorite(listing);
       } else {
         // Alternative: If no callback is provided, fallback to an API call.
-        const res = await fetch('/api/nitpicks', {
+        const res = await fetch('/api/nitpicks?teamId=' + teamId, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ realEstateId: listing.id }),

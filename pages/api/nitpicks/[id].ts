@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
+import { getCookie } from 'cookies-next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Only allow DELETE requests
@@ -16,8 +17,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   const nitpickId = req.query.id;
   const userId = session.user.id;
+  const teamId = await getCookie('currentTeamId', { req, res });
+
   if (typeof nitpickId !== 'string') {
     return res.status(400).json({ error: 'Invalid nitpick id' });
+  }
+
+  if (!teamId) {
+    return res.status(400).json({ error: 'Team ID is required' });
   }
 
   try {
@@ -30,13 +37,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     
     // Only allow deletion if the record belongs to the current user
-    if (nitpick.userId !== userId) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
+    // if (nitpick.userId !== userId) {
+    //   return res.status(403).json({ error: 'Forbidden' });
+    // }
 
     await prisma.nitpick.deleteMany({
       where: { 
-                userId: nitpick.userId,
+                teamId: teamId,
                 realEstateId: nitpick.realEstateId
       },
     });

@@ -9,6 +9,7 @@ import ListingsGrid from '../../components/ListingsGrid';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useSession } from 'next-auth/react';
 import { toggleFavorite } from '@/lib/favorite';
+import { getCookie } from 'cookies-next';
 
 
 // Define libraries outside the component
@@ -31,7 +32,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const [loading, setLoading] = useState(false);
   const submitButtonRef = useRef(null);
 
-
+  const currentTeamId = getCookie('currentTeamId');
 
   const mapContainerStyle = {
     width: '100%',
@@ -126,7 +127,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
                   return;
                 }
                 try {
-                  await toggleFavorite(listing, nitpicks, setNitpicks, userId);
+                  await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
                 } catch (error) {
                   console.error(error);
                 }
@@ -197,7 +198,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
               return;
             }
             try {
-              await toggleFavorite(listing, nitpicks, setNitpicks, userId);
+              await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
             } catch (error) {
               console.error(error);
             }

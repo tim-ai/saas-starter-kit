@@ -68,6 +68,8 @@ model User {
   sessions    Session[]
   invitations Invitation[]
   nitpickedProperties Nitpick[]
+  comments   IssueComment[]
+  votes      IssueVote[]
 }
 
 model Team {
@@ -86,6 +88,10 @@ model Team {
   nitpicks        Nitpick[]    // new relation field: get nitpicks associated with this team
   isDefault       Boolean      @default(false) // mark default team created during registration
 
+  issues         RealEstateIssue[] // new relation field: get issues associated with this team
+  issueComments   IssueComment[] // new relation field: get issue comments associated with this team
+  votes          IssueVote[] // new relation field: get comment votes associated with this team
+  
   @@index([billingId])
 }
 
@@ -222,6 +228,7 @@ model RealEstate {
   evaluation   RealEstateEvaluation[]
   nitpicks     Nitpick[]
   
+  issues       RealEstateIssue[]
   statuses     RealEstateStatus[]
   
   @@index([type])
@@ -253,6 +260,44 @@ model RealEstateEvaluation {
   @@index([source])
   @@index([createdBy])
   @@index([realEstateId])
+}
+
+// {
+      // "type":"issue",
+      // "area":"Sewage",
+      // "problem":"1900 construction likely predates modern sewer lines; roots/breaks possible.",
+      // "severity":"medium",
+      // "impact":"$5k–$15k for line inspection/replacement if compromised.",
+      // "source":"Sewer: Connected + Year Built: 1900"}
+/// }
+
+model RealEstateIssue {
+  id          String   @id @default(uuid())
+  realEstateId String
+  type        String
+  area        String?
+  problem     String?
+  severity    String?
+  impact      String?
+  source      String?
+  meta        Json?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  teamId      String? // team associated with the issue
+
+  realEstate  RealEstate @relation(fields: [realEstateId], references: [id], onDelete: Cascade)
+  team        Team?     @relation(fields: [teamId], references: [id])
+
+  issueComments IssueComment[]
+  votes       IssueVote[]    // new relation field for issue votes
+
+  @@index([type])
+  @@index([source])
+  @@index([createdBy])
+  @@index([realEstateId])
+  @@index([teamId])
+  @@index([area])
 }
 
 model RealEstateStatus {
@@ -317,4 +362,46 @@ model Nitpick {
   @@index([userId])
   @@index([realEstateId])
   @@index([teamId])
+}
+
+model IssueComment {
+  id         String           @id @default(uuid())
+  issueId    String
+  parentId   String?          // null for top-level comments
+  content    String
+  createdBy  String?          // user who authored the comment
+  teamId     String?          // new – team associated with the comment
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  // Relations
+  issue      RealEstateIssue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  // Self-relation for replies:
+  parent     IssueComment?    @relation("CommentReplies", fields: [parentId], references: [id])
+  replies    IssueComment[]   @relation("CommentReplies")
+  // user who authored the comment:
+  user       User?           @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  // New relation to Team:
+  team       Team?            @relation(fields: [teamId], references: [id])
+
+  @@index([issueId])
+  @@index([parentId])
+  @@index([createdBy])
+}
+
+model IssueVote {
+  id         String             @id @default(uuid())
+  issueId    String
+  userId     String
+  vote       Int                // +1 for thumb-up, -1 for thumb-down
+  teamId     String?            // team associated with the vote
+  createdAt  DateTime           @default(now())
+  
+  // Relations
+  issue      RealEstateIssue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team       Team?              @relation(fields: [teamId], references: [id])
+  
+  @@unique([issueId, userId])
+  @@index([vote])
 }

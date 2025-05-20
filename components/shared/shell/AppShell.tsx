@@ -1,38 +1,34 @@
-import { Loading } from '@/components/shared';
-import { useSession } from 'next-auth/react';
-import React from 'react';
-import Header from './Header';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-
-// import Drawer from './Drawer';
-//import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { Loading } from '@/components/shared';
+import Header from './Header';
+import { TeamProvider } from 'context/TeamContext';
 
 export default function AppShell({ children }) {
   const router = useRouter();
   const { status } = useSession();
+  const [currentTeamId, setCurrentTeamId] = useState<string | null>(null);
 
   if (status === 'loading') {
     return <Loading />;
   }
-
   if (status === 'unauthenticated') {
     router.push('/auth/login');
-    return;
+    return null;
   }
-  //const isGuest = status === 'unauthenticated';
 
   return (
-    <div>
-      {/* <Drawer isCollapsed={isCollapsed} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} setIsCollapsed={setIsCollapsed} />  */}
+    <TeamProvider value={{ currentTeamId, setCurrentTeamId }}>
       <div className="lg:pl-1">
-        <Header/>
+        <Header currentTeamId={currentTeamId} setCurrentTeamId={setCurrentTeamId} />
         <main className="py-5">
           <div className="mx-auto px-4 sm:px-6 lg:px-8">
             {children}
           </div>
         </main>
       </div>
-    </div>
+    </TeamProvider>
   );
 }
 

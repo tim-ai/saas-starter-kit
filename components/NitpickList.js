@@ -54,7 +54,6 @@ export default function NitpickList({ nitpicks, hoveredListingId, setHoveredList
             }
           }}
           onClick={() => 
-            console.error('Clicked nitpick:', nitpick.address) ||
             handleClick(nitpick.address)}
           className={`${styles.card} ${hoveredListingId === nitpick.id ? styles.highlighted : ''}`}
         >
@@ -77,7 +76,7 @@ export default function NitpickList({ nitpicks, hoveredListingId, setHoveredList
                 className={styles.deleteMark}
                 onClick={(e) => {
                   // log the nitpick ID and address
-                  console.error('Deleting nitpick:', nitpick.nid, nitpick.address);
+                  console.error('Deleting nitpick:', nitpick.nid, nitpick.id, nitpick.address);
                   e.stopPropagation();
                   // call delete function with realestate ID instead of nitpick ID
                   handleDeleteFavorite(nitpick.nid, nitpick.id);

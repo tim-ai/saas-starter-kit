@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   UserCircleIcon,
@@ -14,9 +14,16 @@ import { useCustomSignOut } from 'hooks/useCustomSignout';
 import TeamDropdown from '@/components/shared/TeamDropdown';
 import UserNavigation from '@/components/shared/shell/UserNavigation';
 import styles from './Header.module.css';
+import useTeams from 'hooks/useTeams';
+import { getCookie, setCookie } from 'cookies-next';
+import { useRouter } from 'next/router'; 
 
+interface HeaderProps {
+  currentTeamId: string | null;
+  setCurrentTeamId: (teamId: string | null) => void;
+}
 
-const Header = () => {
+const Header: React.FC<HeaderProps> = ({ currentTeamId, setCurrentTeamId }) => {
   const { toggleTheme } = useTheme();
   const { status, data } = useSession();
   const { t } = useTranslation('common');
@@ -39,6 +46,39 @@ const Header = () => {
 
   if (status === 'loading' || !data) return null;
   const { user } = data;
+  const { teams } = useTeams();
+  const router = useRouter();
+  
+  const [currentTeam, setCurrentTeam] = useState<any>(null);
+  
+  useEffect(() => {
+    const cookieTeamId = getCookie('currentTeamId');
+    if (cookieTeamId && teams && teams.length > 0) {
+      const teamFromCookie = teams.find((team) => team.id === cookieTeamId);
+      if (teamFromCookie) {
+        setCurrentTeam(teamFromCookie);
+        return;
+      }
+    }
+  
+    // If no cookie found then try to set by router query or default to first team.
+    if (teams && teams.length > 0) {
+      const teamFromQuery = teams.find((team) => team.slug === router.query.slug);
+      if (teamFromQuery) {
+        setCurrentTeam(teamFromQuery);
+        setCookie('currentTeamId', teamFromQuery.id, { maxAge: 60 * 60 * 24 * 7 });
+      } else {
+        setCurrentTeam(teams[0]);
+        setCookie('currentTeamId', teams[0].id, { maxAge: 60 * 60 * 24 * 7 });
+      }
+    }
+  }, [teams, router.query.slug]);
+  
+  // Separate onSelectTeam function
+  const handleSelectTeam = useCallback((teamId: string) => {
+    setCurrentTeamId(teamId);
+    setCookie('currentTeamId', teamId, { maxAge: 60 * 60 * 24 * 7 });
+  }, [setCurrentTeamId]);
 
   return (
     <header className={styles.header}>
@@ -100,7 +140,7 @@ const Header = () => {
                     <h4 className={styles.dropdownTitle}>
                       {t('Team')}
                     </h4>
-                    <TeamDropdown />
+                    <TeamDropdown onSelectTeam={handleSelectTeam} team={currentTeam} />
                   </div>
                   <div className={styles.dropdownSection}>
                     {env.darkModeEnabled && (

@@ -9,6 +9,8 @@ import { transformNitpick } from '@/lib/nitpick';
 import { toggleFavorite } from '@/lib/favorite';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useSession } from 'next-auth/react';
+import { getCookie } from 'cookies-next';
+
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -36,6 +38,8 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [mapInstance, setMapInstance] = useState(null);
   const [hoveredListingId, setHoveredListingId] = useState(null);
+
+  const currentTeamId = getCookie('currentTeamId') || null;
 
   // Button ref for simulating the click
   const submitButtonRef = useRef(null);
@@ -177,7 +181,6 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
                 setPropertyMeta(meta);
 
               } else if (data.type === 'issue') {
-                data.comments = [];
                 if (!hasReset) {
                   setSections({ [data.area]: [data] });
                   hasReset = true;
@@ -219,7 +222,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
             setMapError('Failed to load Google Maps. Please check your API key.')
           }
         >
-          <div>
+          <div name="searchHeader">
             <form onSubmit={handleSubmit} className={styles.searchForm}>
               <Autocomplete
                 className={styles.searchHeader}
@@ -302,7 +305,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
                   return;
                 }
                 try {
-                  await toggleFavorite(listing, nitpicks, setNitpicks, userId);
+                  await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
                 } catch (error) {
                   console.error(error);
                 }
@@ -336,10 +339,10 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
             setHoveredListingId={setHoveredListingId}
             onDeleteFavorite={(rid) => {
               console.log('Deleting realestate:', rid);
-              setSections((prev) => ({
-                ...prev,
-                [rid]: prev[rid].filter((listing) => listing.id !== rid),
-              }));
+              // setSections((prev) => ({
+              //   ...prev,
+              //   [rid]: prev[rid]?.filter((listing) => listing.id !== rid),
+              // }));
             }}
           />
         </div>
@@ -352,9 +355,10 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
 export async function getServerSideProps(context) {
   const protocol = context.req.headers['x-forwarded-proto'] || 'http';
   const host = context.req.headers.host;
+  const teamId = context.req.cookies.currentTeamId;
   
   // Fetch from the internal /api/history endpoint. The cookie header is passed for auth.
-  const historyResponse = await fetch(`${protocol}://${host}/api/history`, {
+  const historyResponse = await fetch(`${protocol}://${host}/api/history?team=${teamId}`, {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json',

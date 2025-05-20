@@ -1,11 +1,11 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import {
    Heart, MessageCircle, ThumbsUp, Trash2,
    DollarSign, MapPin, AlertTriangle, Info as InfoIcon, XCircle, Snowflake, Flame,
   CookingPot, Droplet, Wrench, Plug, Home, ShieldAlert, LayoutGrid, Car, Users, TrendingUp
 } from 'lucide-react';
 import { FaBed, FaBath, FaExpand, FaHeart } from 'react-icons/fa';
-
+import { getCookie } from 'cookies-next';
 
 // --- Constants ---
 const ISSUE_CATEGORIES_WITH_ICONS = {
@@ -63,20 +63,18 @@ const StyledButton = ({ onClick, children, variant = 'primary', size = 'md', cla
     danger: "bg-red-500 hover:bg-red-600 text-white focus:ring-red-500",
     ghost: "bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-300",
   };
-  const sizes = { sm: "px-3 py-1.5 text-sm", md: "px-4 py-2 text-base", lg: "px-6 py-3 text-lg" };
+  const sizes = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2 text-sm", lg: "px-6 py-3 text-base" };
   return (<button onClick={onClick} disabled={disabled} className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${className}`}>{children}</button>);
 };
 
 // --- Sub-Components ---
 const CommentItem = ({ comment, onLikeComment, onDeleteComment, concernId, categoryName, currentUser }) => (
   <div className="pl-4 py-2 bg-gray-50 rounded-md mt-2">
-    <p className="text-sm text-gray-700">{comment.text}</p>
+    <p className="text-xs text-gray-700">{comment.content}</p>
     <div className="flex items-center justify-between mt-1">
-      <span className="text-xs text-gray-500">By: {comment.author} - {new Date(comment.timestamp).toLocaleDateString()}</span>
+      <span className="text-xs text-gray-500">By: {comment.user.name} - {new Date(comment.createdAt).toLocaleDateString()}</span>
       <div className="flex items-center space-x-2">
-        <button onClick={() => onLikeComment(categoryName, concernId, comment.id)} className="flex items-center text-xs text-blue-500 hover:text-blue-700" aria-label="Like comment">
-          <ThumbsUp size={14} className="mr-1" /> ({comment.likes})
-        </button>
+        
         {currentUser && comment.userId === currentUser.id && (
           <button onClick={() => onDeleteComment(categoryName, concernId, comment.id)} className="text-xs text-red-500 hover:text-red-700" aria-label="Delete comment">
             <Trash2 size={14} />
@@ -105,7 +103,7 @@ const ConcernDetailRow = ({ label, value }) => {
 // "severity": "medium", 
 // "highlight": "混合供暖系统", 
 // "recommendation": "建议进行能源审计以优化供暖效率，考虑升级为统一系统。"}
-const ConcernItem = ({ concern, categoryName, onLikeConcern, onDeleteConcern, onAddCommentToConcern, onLikeComment, onDeleteComment, currentUser, activeCommentInput, setActiveCommentInput }) => {
+const ConcernItem = ({ concern, categoryName, onLikeConcern, onDisableConcern, onAddCommentToConcern, onLikeComment, onDeleteComment, currentUser, activeCommentInput, setActiveCommentInput }) => {
   const [newCommentText, setNewCommentText] = useState('');
   const handleAddComment = () => {
     if (newCommentText.trim()) {
@@ -125,7 +123,7 @@ const ConcernItem = ({ concern, categoryName, onLikeConcern, onDeleteConcern, on
             <button onClick={() => onLikeConcern(categoryName, concern.id)} className="flex items-center text-sm text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50" aria-label="Like concern">
               <ThumbsUp size={16} className="mr-0.5 sm:mr-1" /> {concern.likes}
             </button>
-            <button onClick={() => onDeleteConcern(categoryName, concern.id)} className="text-sm text-gray-500 hover:text-red-600 p-1 rounded-md hover:bg-red-50" aria-label="Remove concern">
+            <button onClick={() => onDisableConcern(categoryName, concern.id)} className="text-sm text-gray-500 hover:text-red-600 p-1 rounded-md hover:bg-red-50" aria-label="Remove concern">
               <XCircle size={16} />
             </button>
         </div>
@@ -133,8 +131,8 @@ const ConcernItem = ({ concern, categoryName, onLikeConcern, onDeleteConcern, on
       <div className="flex flex-wrap items-center text-xs text-gray-500 mb-2">
         <span className={`h-2.5 w-2.5 rounded-full mr-1.5 ${SEVERITY_CLASSES[concern.severity] || SEVERITY_CLASSES.unknown}`}></span>
         Severity: {SEVERITY_TEXT[concern.severity] || SEVERITY_TEXT.unknown}
-        <span className="mx-1.5 sm:mx-2"></span>
-        Added by: {concern.author || 'AI'} on: {new Date(concern.timestamp).toLocaleDateString()}
+        {/* <span className="mx-1.5 sm:mx-2"></span>
+        Added by: {concern.user.name || 'AI'} on: {new Date(concern.timestamp).toLocaleDateString()} */}
       </div>
       <div className="mb-2 space-y-0.5">
         <ConcernDetailRow label="Impact" value={concern.impact} />
@@ -142,21 +140,21 @@ const ConcernItem = ({ concern, categoryName, onLikeConcern, onDeleteConcern, on
         <ConcernDetailRow label="Recommendation" value={concern.recommendation} />
       </div>
       <div className="mt-3">
-        <h4 className="text-sm font-semibold text-gray-600 mb-1">Comments ({concern.comments.length})</h4>
+        <h4 className="text-xs font-semibold text-gray-600 mb-1">Comments ({concern.comments?.length})</h4>
         {concern.comments.sort((a,b) => b.timestamp - a.timestamp).map(comment => (
           <CommentItem key={comment.id} comment={comment} onLikeComment={onLikeComment} onDeleteComment={onDeleteComment} concernId={concern.id} categoryName={categoryName} currentUser={currentUser} />
         ))}
         {activeCommentInput === concern.id ? (
           <div className="mt-2">
             <StyledInput value={newCommentText} onChange={(e) => setNewCommentText(e.target.value)} placeholder="Add your comment..." onKeyDown={(e) => e.key === 'Enter' && handleAddComment()} className="text-sm" />
-            <div className="flex justify-end space-x-2 mt-2">
+            <div className="flex justify-end space-x-2 mt-2 text-xs">
               <StyledButton onClick={() => setActiveCommentInput(null)} variant="secondary" size="sm">Cancel</StyledButton>
               <StyledButton onClick={handleAddComment} size="sm">Post Comment</StyledButton>
             </div>
           </div>
         ) : (
-          <StyledButton onClick={() => setActiveCommentInput(concern.id)} variant="ghost" size="sm" className="mt-2 text-blue-600">
-            <MessageCircle size={16} className="mr-1"/> Add Comment
+          <StyledButton onClick={() => setActiveCommentInput(concern.id)} variant="ghost" size="sm" className="mt-2 text-xs text-blue-600">
+            <MessageCircle size={20} className="mr-1"/> Add Comment
           </StyledButton>
         )}
       </div>
@@ -169,7 +167,7 @@ const IssueCategory = ({
   concerns,
   IconComponent,
   onLikeConcern,
-  onDeleteConcern,
+  onDisableConcern,
   onAddCommentToConcern,
   onLikeComment,
   onDeleteComment,
@@ -207,7 +205,7 @@ const IssueCategory = ({
             concern={concern}
             categoryName={categoryName}
             onLikeConcern={onLikeConcern}
-            onDeleteConcern={onDeleteConcern}
+            onDisableConcern={onDisableConcern}
             onAddCommentToConcern={onAddCommentToConcern}
             onLikeComment={onLikeComment}
             onDeleteComment={onDeleteComment}
@@ -221,7 +219,7 @@ const IssueCategory = ({
   );
 };
 
-const CategoryTile = ({ categoryName, concerns, currentUser, noop }) => {
+const CategoryTile = ({ categoryName, concerns, currentUser, activeCommentInput, setActiveCommentInput, onConcernDisabled }) => {
   // If categoryName is unknown, use a fallback which renders nothing
   const Icon = ISSUE_CATEGORIES_WITH_ICONS[categoryName] || (() => null);
   const maxSeverity = concerns.length > 0 ? Math.max(...concerns.map(c => SEVERITY_ORDER[c.severity] || 0)) : 0;
@@ -270,14 +268,20 @@ const CategoryTile = ({ categoryName, concerns, currentUser, noop }) => {
                 categoryName={categoryName}
                 concerns={concerns}
                 IconComponent={Icon}
-                onLikeConcern={noop}
-                onDeleteConcern={noop}
-                onAddCommentToConcern={noop}
-                onLikeComment={noop}
-                onDeleteComment={noop}
+                onLikeConcern={onLikeConcern}
+                onDisableConcern={
+                  (categoryName, issueId) => {
+                    onDisableConcern(categoryName, issueId);
+                    if (onConcernDisabled) {
+                      onConcernDisabled(categoryName, issueId);
+                    }
+                  }
+                }
+                onAddCommentToConcern={onAddCommentToConcern}
+                onDeleteComment={onDeleteComment}
                 currentUser={currentUser}
-                activeCommentInput={null}
-                setActiveCommentInput={noop}
+                activeCommentInput={activeCommentInput}
+                setActiveCommentInput={setActiveCommentInput}
                 isExpanded={true}
                 className="border-0 shadow-none"
               />
@@ -293,13 +297,15 @@ const CategoryTile = ({ categoryName, concerns, currentUser, noop }) => {
 export default function HouseListingCard({ listingData, currentUser, onFavorite, ...props }) {
   // Initialize the liked state based on available data
   const [listingLiked, setListingLiked] = useState(!!listingData.isFavorite);
-
+  
+  // Define activeCommentInput state to manage which concern's comment input is active
+  const [activeCommentInput, setActiveCommentInput] = useState(null);
+  
   // Toggle favorite state and call the onFavorite callback if provided.
   const toggleListingLike = async (e) => {
     e.stopPropagation();
     // Optimistically update UI.
     setListingLiked((prev) => !prev);
-
     try {
       if (onFavorite) {
         await onFavorite(listingData);
@@ -315,13 +321,10 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
   const [showFullDescription, setShowFullDescription] = useState(false);
   
   // Use the passed-in sections (instead of local concerns state)
-  const externalSections = props.sections || {}; // defaults to empty object if sections is falsy
-  const visibleCategories = useMemo(() => {
-    return Object.keys(externalSections).filter(catName => (externalSections[catName] || []).length > 0);
-  }, [externalSections]);
-  
+  // convert it to a state var
+  const [sections, setSections] = useState(props.sections || {});
+
   // No-op functions for issue manipulation – update these as needed to integrate with external state management.
-  const noop = useCallback(() => {}, []);
 
   const getStatusColor = (status) => {
     if (status === 'Active' || (status && status.startsWith('FOR SALE'))) return 'bg-green-100 text-green-700';
@@ -413,18 +416,43 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
             <AlertTriangle size={20} className="mr-2 text-orange-500" />
             Key Considerations
           </h2>
-
-          {visibleCategories.length > 0 ? (
+          {sections && Object.keys(sections).length > 0 ? (
             <div className="grid grid-cols-3 gap-4">
-              {visibleCategories.map((categoryName) => {
-                const concerns = externalSections[categoryName] || [];
+              {Object.keys(sections).map((categoryName) => {
+                const concerns = sections[categoryName] || [];
+                var disabledConcerns = 0;
+                for (const c of concerns) {
+                  // go through each vote and check if concern is disabled
+                  if (c.votes && c.votes.some(v => v.vote === -100000)) {
+                    disabledConcerns++;
+                  }
+                } 
+
+                if (disabledConcerns == concerns.length) {
+                  return null; // Skip rendering this category if all concerns are disabled
+                }
+
                 return (
                   <CategoryTile
                     key={categoryName}
                     categoryName={categoryName}
                     concerns={concerns}
                     currentUser={currentUser}
-                    noop={noop}
+                    activeCommentInput={activeCommentInput}
+                    setActiveCommentInput={setActiveCommentInput}
+                    onConcernDisabled={
+                      (categoryName, issueId) => {
+                        // update sections accordingly and remove key if all concerns are disabled
+                        const updatedSections = { ...sections };
+                        const updatedConcerns = updatedSections[categoryName].filter(c => c.id !== issueId);
+                        if (updatedConcerns.length === 0) {
+                          delete updatedSections[categoryName];
+                        } else {
+                          updatedSections[categoryName] = updatedConcerns;
+                        }
+                        setSections(updatedSections);
+                      }
+                    }
                   />
                 );
               })}
@@ -437,4 +465,137 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
     </div>
   );
 };
+
+// Example implementations for concern actions
+
+// 1. onLikeConcern: Adds a new vote record (thumb-up) to the IssueVote table.
+export async function onLikeConcern(categoryName, issueId) {
+  try {
+    const res = await fetch('/api/issues/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        issueId,
+        vote: +1, // Using +1 for thumb-up. Change as needed.
+      }),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to like concern');
+    }
+    const data = await res.json();
+    // Return the new vote record for further processing (e.g. update state)
+    return data;
+  } catch (error) {
+    console.error('onLikeConcern error:', error);
+    throw error;
+  }
+}
+
+export async function onDislikeConcern(categoryName, issueId) {
+  try {
+    const res = await fetch('/api/issues/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        issueId,
+        vote: -1, // Using -1 for thumb-down. Change as needed.
+      }),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to dislike concern');
+    }
+    const data = await res.json();
+    // Return the new vote record for further processing (e.g. update state)
+    return data;
+  } catch (error) {
+    console.error('onDislikeConcern error:', error);
+    throw error;
+  }
+}
+
+export async function onDisableConcern(categoryName, issueId) {
+  try {
+    const res = await fetch('/api/issues/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        issueId,
+        vote: -100000, // Using -1 for thumb-down. Change as needed.
+      }),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to dislike concern');
+    }
+    const data = await res.json();
+    // Return the new vote record for further processing (e.g. update state)
+
+    // remove the concern from the list
+
+    return data;
+  } catch (error) {
+    console.error('onDislikeConcern error:', error);
+    throw error;
+  }
+}
+
+// 2. onDeleteConcern: Deletes a concern (RealEstateIssue record) if it is owned by the current user.
+export async function onDeleteConcern(categoryName, issueId) {
+  console.log('onDeleteConcern called with:', categoryName, issueId);
+  if (!issueId) {
+    return;
+  }
+  try {
+    const res = await fetch(`/api/issues/${issueId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      throw new Error('Failed to delete concern');
+    }
+    // Return a success flag (or any response you choose)
+    return true;
+  } catch (error) {
+    console.error('onDeleteConcern error:', error);
+    throw error;
+  }
+}
+
+// 3. onAddCommentToConcern: Adds a new comment record to the IssueComment table.
+export async function onAddCommentToConcern(categoryName, issueId, text) {
+  try {
+    const res = await fetch('/api/issues/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        issueId,
+        text, // Comment text
+      }),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to add comment');
+    }
+    const data = await res.json();
+    // Return the newly created comment record
+    return data;
+  } catch (error) {
+    console.error('onAddCommentToConcern error:', error);
+    throw error;
+  }
+}
+
+// 4. onDeleteComment: Deletes an existing comment from the IssueComment table.
+export async function onDeleteComment(categoryName, issueId, commentId) {
+  try {
+    const res = await fetch(`/api/issues/comment/${commentId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      throw new Error('Failed to delete comment');
+    }
+    // Return a success flag (or any chosen response)
+    return true;
+  } catch (error) {
+    console.error('onDeleteComment error:', error);
+    throw error;
+  }
+}
 
