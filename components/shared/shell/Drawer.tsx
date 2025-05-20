@@ -1,5 +1,5 @@
 import React from 'react';
-import TeamDropdown from '../TeamDropdown';
+//import TeamDropdown from '../TeamDropdown';
 import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import Brand from './Brand';
 import Navigation from './Navigation';
@@ -54,7 +54,7 @@ const Drawer = ({ sidebarOpen, setSidebarOpen, isCollapsed, setIsCollapsed }: Dr
                 {renderHeaderContent()}
                 {!isCollapsed && (
                   <>
-                    <TeamDropdown />
+                    {/* <TeamDropdown /> */}
                     <Navigation />
                   </>
                 )}
@@ -69,7 +69,7 @@ const Drawer = ({ sidebarOpen, setSidebarOpen, isCollapsed, setIsCollapsed }: Dr
           {renderHeaderContent()}
           {!isCollapsed && (
             <>
-              <TeamDropdown />
+              {/* <TeamDropdown /> */}
               <Navigation />
             </>
           )}

@@ -339,10 +339,9 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
             setHoveredListingId={setHoveredListingId}
             onDeleteFavorite={(rid) => {
               console.log('Deleting realestate:', rid);
-              // setSections((prev) => ({
-              //   ...prev,
-              //   [rid]: prev[rid]?.filter((listing) => listing.id !== rid),
-              // }));
+              setNitpicks((prev) => (
+                prev.filter((listing) => listing.id !== rid)
+              ));
             }}
           />
         </div>

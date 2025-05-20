@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from 'next-i18next';
@@ -20,7 +19,6 @@ interface TeamDropdownProps {
 }
 
 const TeamDropdown: React.FC<TeamDropdownProps> = ({ onSelectTeam, team }) => {
-  const router = useRouter();
   const { teams } = useTeams();
   const { data } = useSession();
   const { t } = useTranslation('common');

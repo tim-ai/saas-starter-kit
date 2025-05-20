@@ -18,18 +18,22 @@ import useTeams from 'hooks/useTeams';
 import { getCookie, setCookie } from 'cookies-next';
 import { useRouter } from 'next/router'; 
 
-interface HeaderProps {
-  currentTeamId: string | null;
-  setCurrentTeamId: (teamId: string | null) => void;
-}
 
-const Header: React.FC<HeaderProps> = ({ currentTeamId, setCurrentTeamId }) => {
+const Header = () => {
   const { toggleTheme } = useTheme();
   const { status, data } = useSession();
   const { t } = useTranslation('common');
   const signOut = useCustomSignOut();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   let dropdownTimeout: NodeJS.Timeout;
+
+  const { teams } = useTeams();
+  const router = useRouter();
+  const [currentTeam, setCurrentTeam] = useState<any>(null);
+// Separate onSelectTeam function
+  const handleSelectTeam = useCallback((teamId: string) => {
+    setCookie('currentTeamId', teamId, { maxAge: 60 * 60 * 24 * 7 });
+  }, []);
 
   const handleDropdownMouseEnter = () => {
     if (dropdownTimeout) {
@@ -44,13 +48,6 @@ const Header: React.FC<HeaderProps> = ({ currentTeamId, setCurrentTeamId }) => {
     }, 300); // 300ms delay
   };
 
-  if (status === 'loading' || !data) return null;
-  const { user } = data;
-  const { teams } = useTeams();
-  const router = useRouter();
-  
-  const [currentTeam, setCurrentTeam] = useState<any>(null);
-  
   useEffect(() => {
     const cookieTeamId = getCookie('currentTeamId');
     if (cookieTeamId && teams && teams.length > 0) {
@@ -73,13 +70,10 @@ const Header: React.FC<HeaderProps> = ({ currentTeamId, setCurrentTeamId }) => {
       }
     }
   }, [teams, router.query.slug]);
-  
-  // Separate onSelectTeam function
-  const handleSelectTeam = useCallback((teamId: string) => {
-    setCurrentTeamId(teamId);
-    setCookie('currentTeamId', teamId, { maxAge: 60 * 60 * 24 * 7 });
-  }, [setCurrentTeamId]);
 
+  if (status === 'loading' || !data) return null;
+  const { user } = data;
+  
   return (
     <header className={styles.header}>
       <div className={styles.container}>

@@ -16,7 +16,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   
   const nitpickId = req.query.id;
-  const userId = session.user.id;
   const teamId = await getCookie('currentTeamId', { req, res });
 
   if (typeof nitpickId !== 'string') {
