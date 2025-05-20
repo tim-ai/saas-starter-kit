@@ -200,7 +200,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
 
   return (
     <div className={styles.container2col}>
-      <div className={styles.searchContainer}>
+      <div className="max-w-5xl w-full mx-auto bg-white shadow-xl rounded-lg my-8 font-sans relative">
         <LoadScript
           googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
           libraries={libraries}
@@ -297,7 +297,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
         </LoadScript>
 
         {!mapError && !propertyMeta && (
-          <div className={styles.infoMessage}>No property meta available.</div>
+          <div className={styles.infoMessage}></div>
         )}
 
         {mapError && (
