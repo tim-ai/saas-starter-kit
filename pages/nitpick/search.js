@@ -10,14 +10,17 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useSession } from 'next-auth/react';
 import { toggleFavorite } from '@/lib/favorite';
 import { getCookie } from 'cookies-next';
+import { useRouter } from 'next/router';
 
 
 // Define libraries outside the component
 const libraries = ['places'];
 
 export default function Map3D({ nitpicks: serverNitpicks }) {
+  const router = useRouter();
   const { data: session } = useSession();
   const userId = session?.user?.id || null;
+  const { keywords: queryKeywords } = router.query;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [listings, setListings] = useState([]);
@@ -41,6 +44,17 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   };
+
+  useEffect(() => {
+    if (queryKeywords) {
+      setSearchTerm(queryKeywords);
+      setTimeout(() => {
+        if (submitButtonRef.current) {
+          submitButtonRef.current.click();
+        }
+      }, 100);
+    }
+  }, [queryKeywords]);
 
   useEffect(() => {
     if (navigator.geolocation) {

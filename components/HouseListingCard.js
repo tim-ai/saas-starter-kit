@@ -379,7 +379,8 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
         </div>
         <div className={"flex justify-between text-gray-600"}>
           <span className="text-xs">
-            Year Built: {listingData.year_built || 'Unknown'}
+            Year Built <br />
+             {listingData.year_built || 'Unknown'}
           </span>
           <span className="text-xs">
             <FaBed /> {listingData.beds}

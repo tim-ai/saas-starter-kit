@@ -3,8 +3,11 @@ import type { NextPageWithLayout } from 'types';
 import { useEffect, useState, ReactElement } from 'react';
 import { Search, Cog, Users } from 'lucide-react'; // Import icons
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 const HomePage: NextPageWithLayout = () => {
+    const router = useRouter();
+    const [searchQuery, setSearchQuery] = useState('');
     const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
@@ -118,8 +121,23 @@ const HomePage: NextPageWithLayout = () => {
                             Nitpickr.net uses AI to analyze listings, spot potential issues, and helps you collaborate with friends and family to find the perfect home.
                         </p>
                         <div className="reveal" style={{ transitionDelay: '0.4s' }}>
-                            <input type="text" placeholder="Enter an address, neighborhood, city, or ZIP code" className="w-full max-w-xl p-4 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-400 mb-4 md:mb-0 md:mr-2 shadow-lg" />
-                            <button className="cta-button">Search Listings</button>
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    router.push(`/nitpick/search?keywords=${encodeURIComponent(searchQuery)}`);
+                                }}
+                            >
+                                <input
+                                    type="text"
+                                    placeholder="Enter an address, neighborhood, city, or ZIP code"
+                                    className="w-full max-w-xl p-4 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-400 mb-4 md:mb-0 md:mr-2 shadow-lg"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                <button type="submit" className="cta-button">
+                                    Search Listings
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </header>
