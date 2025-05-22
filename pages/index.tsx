@@ -190,7 +190,7 @@ const HomePage: NextPageWithLayout = () => {
                             </div>
                             {/* Feature 2 */}
                             <div className="feature-card reveal" style={{ transitionDelay: '0.3s' }}>
-                                <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                <img src="/search.png"
                                     onError={(e) => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src='https://placehold.co/600x400/7dd3fc/ffffff?text=Smart+Comparison'; }}
                                     alt="Smart Comparison" className="rounded-t-lg mb-4 w-full h-48 object-cover" />
                                 <h3 className="text-2xl font-semibold mb-3 text-sky-700">Intuitive Search & Compare</h3>
@@ -198,7 +198,7 @@ const HomePage: NextPageWithLayout = () => {
                             </div>
                             {/* Feature 3 */}
                             <div className="feature-card reveal" style={{ transitionDelay: '0.5s' }}>
-                                <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                <img src="/collaborative.png"
                                     onError={(e) => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src='https://placehold.co/600x400/e0f2fe/1e40af?text=Team+Collaboration'; }}
                                     alt="Team Collaboration" className="rounded-t-lg mb-4 w-full h-48 object-cover" />
                                 <h3 className="text-2xl font-semibold mb-3 text-sky-700">Collaborative Nitpicking</h3>
@@ -222,7 +222,7 @@ const HomePage: NextPageWithLayout = () => {
                             </div>
                             {/* Feature 6 */}
                             <div className="feature-card reveal" style={{ transitionDelay: '0.5s' }}>
-                                <img src="https://images.unsplash.com/photo-1579783900881-2b898c51650a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                <img src="/alert.png"
                                     onError={(e) => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src='https://placehold.co/600x400/e0f2fe/1e40af?text=Personalized+Alerts'; }}
                                     alt="Personalized Alerts" className="rounded-t-lg mb-4 w-full h-48 object-cover" />
                                 <h3 className="text-2xl font-semibold mb-3 text-sky-700">Personalized Listing Alerts</h3>

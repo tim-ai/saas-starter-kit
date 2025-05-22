@@ -73,6 +73,10 @@ const unAuthenticatedRoutes = [
   '/login/saml',
   '/.well-known/*',
   '/logo.jpg',
+  '/house_c.png',
+  '/alert.png',
+  '/search.png',
+  '/collaborative.png',
   '/'
 ];
 
