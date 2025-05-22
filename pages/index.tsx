@@ -182,7 +182,7 @@ const HomePage: NextPageWithLayout = () => {
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {/* Feature 1 */}
                             <div className="feature-card reveal" style={{ transitionDelay: '0.1s' }}>
-                                <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                <img src="/ai.png"
                                     onError={(e) => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src='https://placehold.co/600x400/38bdf8/ffffff?text=AI+Analysis'; }}
                                     alt="AI Analysis" className="rounded-t-lg mb-4 w-full h-48 object-cover" />
                                 <h3 className="text-2xl font-semibold mb-3 text-sky-700">AI-Powered Insights</h3>
@@ -311,8 +311,10 @@ const HomePage: NextPageWithLayout = () => {
                             Join Nitpickr.net today and experience a smarter, more collaborative way to hunt for houses.
                         </p>
                         <div className="reveal" style={{ transitionDelay: '0.4s' }}>
-                            <button className="px-10 py-4 bg-white text-sky-600 font-bold rounded-lg shadow-lg hover:bg-gray-100 hover:scale-105 transform transition-all duration-300 ease-in-out text-xl">
-                                Sign Up for Free
+                            <button   
+                                onClick={() => router.push('/login')}
+                                className="px-10 py-4 bg-white text-sky-600 font-bold rounded-lg shadow-lg hover:bg-gray-100 hover:scale-105 transform transition-all duration-300 ease-in-out text-xl">
+                            Sign Up for Free
                             </button>
                         </div>
                     </div>

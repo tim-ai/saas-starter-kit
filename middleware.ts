@@ -77,6 +77,7 @@ const unAuthenticatedRoutes = [
   '/alert.png',
   '/search.png',
   '/collaborative.png',
+  '/ai.png',
   '/'
 ];
 
