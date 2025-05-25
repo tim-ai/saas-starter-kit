@@ -1,10 +1,10 @@
 import { GetServerSidePropsContext } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { NextPageWithLayout } from 'types';
-import { useTranslation } from 'next-i18next';
+// import { useTranslation } from 'next-i18next';
 import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
-import Stripe from 'stripe';
+// import Stripe from 'stripe';
 
 
 export const StripePricingTable = dynamic(() => Promise.resolve(() => {
