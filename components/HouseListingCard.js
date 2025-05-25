@@ -321,9 +321,6 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
   // State for description expansion
   const [showFullDescription, setShowFullDescription] = useState(false);
   
-  // Use the passed-in sections (instead of local concerns state)
-  // convert it to a state var
-  const [sections, setSections] = useState(props.sections || {});
 
   // No-op functions for issue manipulation – update these as needed to integrate with external state management.
 
@@ -421,10 +418,10 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
             <AlertTriangle size={20} className="mr-2 text-orange-500" />
             Key Considerations
           </h2>
-          {sections && Object.keys(sections).length > 0 ? (
+          {props.sections && Object.keys(props.sections).length > 0 ? (
             <div className="grid grid-cols-3 gap-4">
-              {Object.keys(sections).map((categoryName) => {
-                const concerns = sections[categoryName] || [];
+              {Object.keys(props.sections).map((categoryName) => {
+                const concerns = props.sections[categoryName] || [];
                 var disabledConcerns = 0;
                 for (const c of concerns) {
                   // go through each vote and check if concern is disabled
@@ -448,14 +445,14 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
                     onConcernDisabled={
                       (categoryName, issueId) => {
                         // update sections accordingly and remove key if all concerns are disabled
-                        const updatedSections = { ...sections };
+                        const updatedSections = { ...props.sections };
                         const updatedConcerns = updatedSections[categoryName].filter(c => c.id !== issueId);
                         if (updatedConcerns.length === 0) {
                           delete updatedSections[categoryName];
                         } else {
                           updatedSections[categoryName] = updatedConcerns;
                         }
-                        setSections(updatedSections);
+                        props.setSections(updatedSections);
                       }
                     }
                   />

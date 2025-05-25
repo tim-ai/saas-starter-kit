@@ -58,6 +58,8 @@ const Payments = ({ teamFeatures }) => {
           </div>
 
           <ProductPricing plans={plans} subscriptions={subscriptions} />
+
+          
         </>
       )}
     </>

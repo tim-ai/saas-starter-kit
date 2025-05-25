@@ -51,7 +51,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
         if (submitButtonRef.current) {
           submitButtonRef.current.click();
         }
-      }, 200);
+      }, 100);
     }
   }, [queryAddress]);
 
@@ -258,6 +258,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
             <HouseListingCard 
               listingData={propertyMeta} 
               sections={sections} 
+              setSections={setSections}
               currentUser={userId} 
               onFavorite={async (listing) => {
                 if (!userId) {
