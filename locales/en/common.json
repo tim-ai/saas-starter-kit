@@ -248,5 +248,6 @@
   "try-again-later": "or visit here later.",
   "multiple-sso-teams": "User belongs to multiple teams with SSO enabled. Please enter your team slug to get started.",
   "nitpick-it": "Nitpick IT!",
-  "search-it": "Search IT!"
+  "search-it": "Search IT!",
+  "subscription": "Subscription"
 }

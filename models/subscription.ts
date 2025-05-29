@@ -8,6 +8,8 @@ export const createStripeSubscription = async ({
   startDate,
   endDate,
   priceId,
+  teamId,
+  userId,
 }: {
   customerId: string;
   id: string;
@@ -15,6 +17,8 @@ export const createStripeSubscription = async ({
   startDate: Date;
   endDate: Date;
   priceId: string;
+  teamId?: string;
+  userId?: string;
 }) => {
   return await prisma.subscription.create({
     data: {
@@ -24,6 +28,8 @@ export const createStripeSubscription = async ({
       startDate,
       endDate,
       priceId,
+      ...(teamId && { teamId }),
+      ...(userId && { userId }),
     },
   });
 };
@@ -45,10 +51,38 @@ export const updateStripeSubscription = async (id: string, data: any) => {
   });
 };
 
+export const getSubscriptionsByCustomerId = async (customerId: string) => {
+  return await prisma.subscription.findMany({
+    where: {
+      customerId,
+      active: true, // Only return active subscriptions
+    },
+  });
+};
+
+export const getSubscriptionsByTeamId = async (teamId: string) => {
+  return await prisma.subscription.findMany({
+    where: {
+      teamId,
+      active: true,
+    },
+  });
+};
+
+export const getSubscriptionsByUserId = async (userId: string) => {
+  return await prisma.subscription.findMany({
+    where: {
+      userId,
+      active: true,
+    },
+  });
+};
+
 export const getByCustomerId = async (customerId: string) => {
   return await prisma.subscription.findMany({
     where: {
       customerId,
+      active: true, // Only return active subscriptions
     },
   });
 };

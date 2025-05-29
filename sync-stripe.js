@@ -2,11 +2,11 @@ const Stripe = require('stripe');
 const { PrismaClient } = require('@prisma/client');
 
 /**
- * Synchronizes data between a database and the Stripe API.
- * Retrieves active products and prices from Stripe, deletes existing data in the database,
- * and inserts the new data. Prints the number of synced products and prices.
+ * Synchronizes data between the database and the Stripe API.
+ * Retrieves active products, prices, and subscriptions from Stripe, deletes existing data in the database,
+ * and inserts the new data. Prints the number of synced products, prices, and subscriptions.
  *
- * @returns {Promise<void>} - A promise that resolves once the synchronization is complete.
+ * @returns {Promise<void>}
  */
 const sync = async () => {
   const prisma = new PrismaClient();
@@ -14,10 +14,11 @@ const sync = async () => {
     console.log('Starting sync with Stripe');
     const stripe = getStripeInstance();
 
-    // Get all active products and prices
-    const [products, prices] = await Promise.all([
+    // Get all active products, prices, and subscriptions
+    const [products, prices, subscriptions] = await Promise.all([
       stripe.products.list({ active: true }),
       stripe.prices.list({ active: true }),
+      stripe.subscriptions.list({ status: 'all' }), // adjust status filter if needed
     ]);
 
     if (prices.data.length > 0 && products.data.length > 0) {
@@ -25,6 +26,7 @@ const sync = async () => {
         ...cleanup(prisma),
         ...seedServices(products.data, prisma),
         ...seedPrices(prices.data, prisma),
+        ...seedSubscriptions(subscriptions.data, prisma),
       ];
       await prisma.$transaction(operations);
       await printStats(prisma);
@@ -46,34 +48,38 @@ const sync = async () => {
 
 sync();
 
-// handle uncaught errors
+// Handle uncaught errors
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
   process.exit(1);
 });
 
 async function printStats(prisma) {
-  const [productCount, priceCount] = await Promise.all([
+  const [productCount, priceCount, subscriptionCount] = await Promise.all([
     prisma.service.count(),
     prisma.price.count(),
+    prisma.subscription.count(),
   ]);
 
   console.log('Products synced:', productCount);
   console.log('Prices synced:', priceCount);
+  console.log('Subscriptions synced:', subscriptionCount);
 }
 
 function cleanup(prisma) {
   return [
-    // delete all prices from the database
+    // Delete all prices from the database
     prisma.price.deleteMany({}),
-    // Delete all products and prices from the database
+    // Delete all products (services) from the database
     prisma.service.deleteMany({}),
+    // Delete all subscriptions from the database
+    prisma.subscription.deleteMany({}),
   ];
 }
 
 function getStripeInstance() {
   if (process.env.STRIPE_SECRET_KEY) {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2022-11-15',
     });
     return stripe;
@@ -90,7 +96,7 @@ function seedPrices(prices, prisma) {
         billingScheme: data.billing_scheme,
         currency: data.currency,
         serviceId: data.product,
-        amount: data.unit_amount ? data.unit_amount / 100 : undefined,
+        amount: data.unit_amount ? data.unit_amount / 100 : null,
         metadata: data.recurring,
         type: data.type,
         created: new Date(data.created * 1000),
@@ -112,4 +118,27 @@ function seedServices(products, prisma) {
       },
     })
   );
+}
+
+function seedSubscriptions(subscriptions, prisma) {
+  return subscriptions.map((data) => {
+    // Get the priceId from the first subscription item (assumes at least one item exists)
+    const priceId =
+      data.items && data.items.data && data.items.data.length > 0
+        ? data.items.data[0].price.id
+        : null;
+
+    return prisma.subscription.create({
+      data: {
+        id: data.id,
+        customerId: data.customer,
+        priceId: priceId,
+        active: data.status === 'active',
+        startDate: new Date(data.current_period_start * 1000),
+        endDate: new Date(data.current_period_end * 1000),
+        cancelAt: data.cancel_at ? new Date(data.cancel_at * 1000) : null,
+        // createdAt and updatedAt will default to now() per your Prisma schema
+      },
+    });
+  });
 }

@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSession } from '@/lib/session';
-import { throwIfNoTeamAccess } from 'models/team';
 import { stripe, getBillingCustomerId } from '@/lib/stripe';
 import env from '@/lib/env';
 import { checkoutSessionSchema, validateWithSchema } from '@/lib/zod';
@@ -35,7 +34,6 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     req.body
   );
 
-  const teamMember = await throwIfNoTeamAccess(req, res);
   const session = await getSession(req, res);
   
   if (!session) {
@@ -43,7 +41,6 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const customerId = await getBillingCustomerId({
-    teamMember,
     user: session.user,
     session
   });
@@ -62,8 +59,8 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     // the actual Session ID is returned in the query parameter when your customer
     // is redirected to the success page.
 
-    success_url: `${env.appUrl}/teams/${teamMember.team.slug}/billing`,
-    cancel_url: `${env.appUrl}/teams/${teamMember.team.slug}/billing`,
+    success_url: `${env.appUrl}/settings/subscription`,
+    cancel_url: `${env.appUrl}/settings/subscription`,
   });
 
   res.json({ data: checkoutSession });

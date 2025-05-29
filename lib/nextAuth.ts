@@ -34,6 +34,7 @@ import {
 import { slackNotify } from './slack';
 import { maxLengthPolicies } from '@/lib/common';
 import { forceConsume } from '@/lib/server-common';
+import { getOrCreateStripeCustomer } from '@/lib/stripe';
 
 const adapter = PrismaAdapter(prisma);
 const providers: Provider[] = [];
@@ -316,6 +317,15 @@ export const getAuthOptions = (
             email: `${user.email}`,
           });
 
+          // Create a Stripe customer for the new user
+          if (env.stripe.userBillingEnabled) {
+            const customerId = await getOrCreateStripeCustomer(newUser);
+            console.log(
+              'Stripe customer created for new user:',
+              newUser.email,
+              customerId);
+          }
+          
           await linkAccount(newUser, account);
 
           if (isIdpLogin && user) {
@@ -362,6 +372,15 @@ export const getAuthOptions = (
           session.user.id = token?.sub || user?.id;
         }
 
+        // Fetch the user to get billingId
+        if (session?.user?.id) {
+          const userWithBilling = await getUser({ id: session.user.id });
+          if (userWithBilling) {
+            session.user.billingId = userWithBilling.billingId;
+            session.user.billingProvider = userWithBilling.billingProvider;
+          }
+        }
+
         if (user?.name) {
           user.name = user.name.substring(0, maxLengthPolicies.name);
         }
@@ -381,6 +400,14 @@ export const getAuthOptions = (
             providerAccountId: account.providerAccountId,
             provider: account.provider,
           });
+
+          // Add billingId to token
+          if (userByAccount) {
+            const userWithBilling = await getUser({ id: userByAccount.id });
+            if (userWithBilling) {
+              token.billingId = userWithBilling.billingId;
+            }
+          }
 
           return { ...token, sub: userByAccount?.id };
         }
@@ -430,11 +457,14 @@ const linkAccount = async (user: User, account: Account) => {
 
 const linkToTeam = async (profile: Profile, userId: string) => {
   const team = await getTeam({
-    id: profile.requested.tenant,
+    id: profile.requested?.tenant || '',
   });
 
   // Sort out roles
   const roles = profile.roles || profile.groups || [];
+  if (!roles.length) {
+    console.warn('No roles or groups found in profile');
+  }
   let userRole: Role = team.defaultRole || Role.MEMBER;
 
   for (let role of roles) {

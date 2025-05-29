@@ -27,7 +27,17 @@ export const createUser = async (data: {
 };
 
 export const updateUser = async ({ where, data }) => {
-  data = normalizeUser(data);
+  // If billing fields are being updated, we don't want to normalize them
+  if (data.billingId || data.billingProvider) {
+    const { billingId, billingProvider, ...rest } = data;
+    data = {
+      ...rest,
+      ...(billingId && { billingId }),
+      ...(billingProvider && { billingProvider })
+    };
+  } else {
+    data = normalizeUser(data);
+  }
 
   return await prisma.user.update({
     where,
@@ -49,6 +59,20 @@ export const upsertUser = async ({ where, update, create }) => {
 export const getUser = async (key: { id: string } | { email: string }) => {
   const user = await prisma.user.findUnique({
     where: key,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      emailVerified: true,
+      password: true,
+      image: true,
+      createdAt: true,
+      updatedAt: true,
+      invalid_login_attempts: true,
+      lockedAt: true,
+      billingId: true,
+      billingProvider: true
+    }
   });
 
   return normalizeUser(user);
@@ -128,4 +152,12 @@ export const getCurrentUser = async (
   }
 
   return session.user;
+};
+
+export const getByCustomerId = async (customerId: string) => {
+  return await prisma.user.findFirst({
+    where: {
+      billingId: customerId,
+    },
+  });
 };

@@ -52,16 +52,18 @@ model VerificationToken {
 }
 
 model User {
-  id                     String    @id @default(uuid())
+  id                     String         @id @default(uuid())
   name                   String
-  email                  String    @unique
+  email                  String         @unique
   emailVerified          DateTime?
   password               String?
   image                  String?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @default(now())
-  invalid_login_attempts Int       @default(0)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @default(now())
+  invalid_login_attempts Int            @default(0)
   lockedAt               DateTime?
+  billingId              String?
+  billingProvider        String?
 
   teamMembers TeamMember[]
   accounts    Account[]
@@ -70,27 +72,31 @@ model User {
   nitpickedProperties Nitpick[]
   comments   IssueComment[]
   votes      IssueVote[]
+  subscriptions Subscription[] // new relation to subscriptions
+
+  @@index([billingId])
 }
 
 model Team {
-  id              String       @id @default(uuid())
+  id              String         @id @default(uuid())
   name            String
-  slug            String       @unique
-  domain          String?      @unique
-  defaultRole     Role         @default(MEMBER)
+  slug            String         @unique
+  domain          String?        @unique
+  defaultRole     Role           @default(MEMBER)
   billingId       String?
   billingProvider String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @default(now())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @default(now())
   members         TeamMember[]
   invitations     Invitation[]
   apiKeys         ApiKey[]
-  nitpicks        Nitpick[]    // new relation field: get nitpicks associated with this team
-  isDefault       Boolean      @default(false) // mark default team created during registration
+  nitpicks        Nitpick[]      // new relation field: get nitpicks associated with this team
+  isDefault       Boolean        @default(false) // mark default team created during registration
 
   issues         RealEstateIssue[] // new relation field: get issues associated with this team
   issueComments   IssueComment[] // new relation field: get issue comments associated with this team
-  votes          IssueVote[] // new relation field: get comment votes associated with this team
+  votes          IssueVote[]    // new relation field: get comment votes associated with this team
+  subscriptions  Subscription[] // new relation to subscriptions
   
   @@index([billingId])
 }
@@ -164,8 +170,17 @@ model Subscription {
   cancelAt   DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @default(now())
+  
+  // Associate with either a team or a user
+  teamId     String?   @db.VarChar(36)
+  userId     String?   @db.VarChar(36)
+
+  team       Team?     @relation(fields: [teamId], references: [id])
+  user       User?     @relation(fields: [userId], references: [id])
 
   @@index([customerId])
+  @@index([teamId])
+  @@index([userId])
 }
 
 model Service {

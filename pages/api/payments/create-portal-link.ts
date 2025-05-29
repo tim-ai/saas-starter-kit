@@ -1,10 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSession } from '@/lib/session';
-import { throwIfNoTeamAccess } from 'models/team';
 import { stripe, getBillingCustomerId } from '@/lib/stripe';
 import env from '@/lib/env';
-import { checkoutSessionSchema, validateWithSchema } from '@/lib/zod';
 
 export default async function handler(
   req: NextApiRequest,
@@ -30,41 +28,25 @@ export default async function handler(
 }
 
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { price, quantity } = validateWithSchema(
-    checkoutSessionSchema,
-    req.body
-  );
-
-  const teamMember = await throwIfNoTeamAccess(req, res);
   const session = await getSession(req, res);
   
   if (!session) {
     throw new Error('Session not found');
   }
-
+  const user = session.user;
+  if (!user?.id) {
+    throw new Error('Could not get user');
+  }
+  
   const customerId = await getBillingCustomerId({
-    teamMember,
-    user: session.user,
+    user: user,
     session
   });
 
-  const checkoutSession = await stripe.checkout.sessions.create({
+  const { url } = await stripe.billingPortal.sessions.create({
     customer: customerId,
-    mode: 'subscription',
-    line_items: [
-      {
-        price,
-        quantity,
-      },
-    ],
-
-    // {CHECKOUT_SESSION_ID} is a string literal; do not change it!
-    // the actual Session ID is returned in the query parameter when your customer
-    // is redirected to the success page.
-
-    success_url: `${env.appUrl}/teams/${teamMember.team.slug}/billing`,
-    cancel_url: `${env.appUrl}/teams/${teamMember.team.slug}/billing`,
+    return_url: `${env.appUrl}/settings/subscription`,
   });
 
-  res.json({ data: checkoutSession });
+  res.json({ data: { url } });
 };

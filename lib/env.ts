@@ -119,6 +119,7 @@ const env = {
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY,
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    userBillingEnabled: process.env.STRIPE_USER_BILLING_ENABLED !== 'false'
   },
 };
 

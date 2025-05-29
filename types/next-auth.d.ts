@@ -1,22 +1,27 @@
-import type { Role } from '@prisma/client';
-import type { DefaultSession } from 'next-auth';
+import 'next-auth';
 
 declare module 'next-auth' {
-  /**
-   * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
-   */
+  interface User {
+    billingId?: string | null;
+    billingProvider?: string | null;
+  }
+
   interface Session {
-    user: DefaultSession['user'] & {
+    user: {
       id: string;
-      roles: { teamId: string; role: Role }[];
-    };
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      billingId?: string | null;
+      billingProvider?: string | null;
+    } & DefaultSession['user'];
   }
 
   interface Profile {
-    requested: {
+    requested?: {
       tenant: string;
     };
-    roles: string[];
-    groups: string[];
+    roles?: string[];
+    groups?: string[];
   }
 }

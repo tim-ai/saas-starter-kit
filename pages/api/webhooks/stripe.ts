@@ -9,7 +9,8 @@ import {
   getBySubscriptionId,
   updateStripeSubscription,
 } from 'models/subscription';
-import { getByCustomerId } from 'models/team';
+import { getByCustomerId as getTeamByCustomerId } from 'models/team';
+import { getByCustomerId as getUserByCustomerId } from 'models/user';
 
 export const config = {
   api: {
@@ -50,6 +51,9 @@ export default async function POST(req: NextApiRequest, res: NextApiResponse) {
 
   if (relevantEvents.includes(event.type)) {
     try {
+      console.log(
+        `===Received relevant Stripe event: ${event.type} - ${event.id}`
+      );
       switch (event.type) {
         case 'customer.subscription.created':
           await handleSubscriptionCreated(event);
@@ -90,8 +94,10 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
 
   const subscription = await getBySubscriptionId(id);
   if (!subscription) {
-    const teamExists = await getByCustomerId(customer as string);
-    if (!teamExists) {
+    const teamExists = await getTeamByCustomerId(customer as string);
+    const userExists = await getUserByCustomerId(customer as string);
+    
+    if (!teamExists && !userExists) {
       return;
     } else {
       await handleSubscriptionCreated(event);
@@ -117,13 +123,17 @@ async function handleSubscriptionCreated(event: Stripe.Event) {
   const { customer, id, current_period_start, current_period_end, items } =
     event.data.object as Stripe.Subscription;
 
+  const team = await getTeamByCustomerId(customer as string);
+  const user = await getUserByCustomerId(customer as string);
+
   await createStripeSubscription({
     customerId: customer as string,
     id,
-
     active: true,
     startDate: new Date(current_period_start * 1000),
     endDate: new Date(current_period_end * 1000),
     priceId: items.data.length > 0 ? items.data[0].plan?.id : '',
+    teamId: team?.id,
+    userId: user?.id,
   });
 }

@@ -2,7 +2,7 @@ import {
   RectangleStackIcon,
   ShieldCheckIcon,
   UserCircleIcon,
-  
+  CreditCardIcon
 } from '@heroicons/react/24/outline';
 import { useTranslation } from 'next-i18next';
 import NavigationItems from './NavigationItems';
@@ -36,6 +36,12 @@ const UserNavigation = ({ activePathname }: NavigationProps) => {
       href: '/settings/security',
       icon: ShieldCheckIcon,
       active: activePathname === '/settings/security',
+    },
+    {
+      name: t('subscription'),
+      href: '/settings/subscription',
+      icon: CreditCardIcon,
+      active: activePathname === '/settings/subscription',
     },
     {
       name: t('all-teams'),
