@@ -49,6 +49,20 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
     return product;
   });
 
+  // sort products by name in the provided order
+  const productOrder = ["Basic", "Pro", "Premium"];
+  // sort by given order by product.name
+  productsWithPrices.sort((a, b) => {
+    const indexA = productOrder.indexOf(a.name);
+    const indexB = productOrder.indexOf(b.name);
+    if (indexA === -1 || indexB === -1) {
+      return 0; // If either product is not in the order, keep original order
+    }
+    return indexA - indexB;
+  });
+
+  //console.log('===productsWithPrices: ', productsWithPrices);
+
   // Subscriptions with product and price
   const _subscriptions: any[] = subscriptions.map((subscription: any) => {
     const _price = prices.find((p) => p.id === subscription.priceId);

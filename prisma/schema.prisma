@@ -64,7 +64,11 @@ model User {
   lockedAt               DateTime?
   billingId              String?
   billingProvider        String?
-
+  
+  // Reference to tier
+  tierId     String?
+  tier       Tier?    @relation(fields: [tierId], references: [id])
+  
   teamMembers TeamMember[]
   accounts    Account[]
   sessions    Session[]
@@ -72,9 +76,10 @@ model User {
   nitpickedProperties Nitpick[]
   comments   IssueComment[]
   votes      IssueVote[]
-  subscriptions Subscription[] // new relation to subscriptions
+  subscriptions Subscription[]
 
   @@index([billingId])
+  @@index([tierId])
 }
 
 model Team {
@@ -97,8 +102,13 @@ model Team {
   issueComments   IssueComment[] // new relation field: get issue comments associated with this team
   votes          IssueVote[]    // new relation field: get comment votes associated with this team
   subscriptions  Subscription[] // new relation to subscriptions
+
+  // Reference to tier
+  tierId     String?
+  tier       Tier?    @relation(fields: [tierId], references: [id])
   
   @@index([billingId])
+  @@index([tierId])
 }
 
 model TeamMember {
@@ -160,6 +170,34 @@ model ApiKey {
   @@index([teamId])
 }
 
+model Tier {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  maxUsers    Int       @default(1)
+  maxStorage  Int       @default(1024) // in MB
+  maxApiCalls Int       @default(1000) // per day
+  price       Float?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  requestLimit Int      @default(1000) // Monthly request limit
+  usageLimit   Int?     @default(1000) // For backward compatibility
+  storageLimit Int      @default(10)   // Storage in GB
+  priceType   String    @default("recurring") // "recurring" or "one-time"
+  
+  // Upper limits for usage tracking
+  limits      Json?     @default("{}")
+  
+  // Reference to service
+  serviceId   String?
+  service     Service?  @relation(fields: [serviceId], references: [id])
+  
+  // Inverse relations
+  users         User[]
+  teams         Team[]
+  // subscriptions Subscription[]
+}
+
 model Subscription {
   id         String    @id
   customerId String
@@ -174,6 +212,10 @@ model Subscription {
   // Associate with either a team or a user
   teamId     String?   @db.VarChar(36)
   userId     String?   @db.VarChar(36)
+  
+  // Reference to tier
+  // tierId     String
+  // tier       Tier      @relation(fields: [tierId], references: [id])
 
   team       Team?     @relation(fields: [teamId], references: [id])
   user       User?     @relation(fields: [userId], references: [id])
@@ -181,6 +223,7 @@ model Subscription {
   @@index([customerId])
   @@index([teamId])
   @@index([userId])
+  // @@index([tierId])
 }
 
 model Service {
@@ -193,6 +236,7 @@ model Service {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
   Price       Price[]
+  tiers       Tier[]   // Add relationship to Tier model
 }
 
 model Price {
@@ -379,6 +423,8 @@ model Nitpick {
   @@index([teamId])
 }
 
+
+
 model IssueComment {
   id         String           @id @default(uuid())
   issueId    String
@@ -420,3 +466,5 @@ model IssueVote {
   @@unique([issueId, userId])
   @@index([vote])
 }
+
+

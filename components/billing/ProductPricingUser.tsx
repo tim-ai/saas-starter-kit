@@ -111,7 +111,7 @@ const ProductPricing = ({ plans, subscriptions }: ProductPricingProps) => {
                         <div className="text-center mb-3">
                           <p className="text-3xl font-extrabold text-slate-800 dark:text-white">
                             {/* Assuming price.amount is in cents */}
-                            ${(price.amount ? price.amount / 100 : 0).toFixed(2)}
+                            ${(price.amount ? price.amount : 0).toFixed(2)}
 
                           </p>
                          

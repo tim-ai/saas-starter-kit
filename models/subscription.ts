@@ -28,8 +28,9 @@ export const createStripeSubscription = async ({
       startDate,
       endDate,
       priceId,
-      ...(teamId && { teamId }),
-      ...(userId && { userId }),
+      //tier: { connect: { id: tierId } },
+      ...(teamId && { team: { connect: { id: teamId } } }),
+      ...(userId && { user: { connect: { id: userId } } }),
     },
   });
 };

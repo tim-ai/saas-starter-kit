@@ -121,6 +121,11 @@ const env = {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
     userBillingEnabled: process.env.STRIPE_USER_BILLING_ENABLED !== 'false'
   },
+  
+  redis: {
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    // Add other Redis configuration options here if needed
+  }
 };
 
 export default env;
