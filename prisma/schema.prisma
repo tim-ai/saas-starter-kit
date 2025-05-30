@@ -449,6 +449,20 @@ model IssueComment {
   @@index([parentId])
   @@index([createdBy])
 }
+model ResourceUsage {
+  id          String   @id @default(uuid())
+  entityId    String   // ID of the entity (user or team)
+  entityType  String   // "user" or "team"
+  resourceType String  // Type of resource (e.g. "storage", "apiCalls", "requests")
+  usage       Int      @default(0) // Current usage count
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([entityId, entityType, resourceType])
+  @@index([entityId])
+  @@index([entityType])
+  @@index([resourceType])
+}
 
 model IssueVote {
   id         String             @id @default(uuid())
@@ -466,5 +480,6 @@ model IssueVote {
   @@unique([issueId, userId])
   @@index([vote])
 }
+
 
 

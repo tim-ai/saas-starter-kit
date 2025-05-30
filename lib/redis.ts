@@ -62,6 +62,16 @@ class RedisClient {
     await this.client.del(key);
   }
 
+  /**
+   * Delete an array of keys in one operation.
+   * @param keys Array of Redis keys to delete.
+   * @returns Promise<number> Number of keys that were deleted.
+   */
+  public async delKeys(keys: string[]): Promise<number> {
+    if (keys.length === 0) return 0;
+    return await this.client.del(keys);
+  }
+
   public async expire(key: string, ttl: number): Promise<void> {
     await this.client.expire(key, ttl);
   }
@@ -92,6 +102,10 @@ class RedisClient {
       }
     }
     return result as T;
+  }
+
+  public async keys(pattern: string): Promise<string[]> {
+    return await this.client.keys(pattern);
   }
 }
 
