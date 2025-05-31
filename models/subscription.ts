@@ -32,21 +32,25 @@ export const createStripeSubscription = async ({
     }
     const tierId = price.service?.name.toLocaleLowerCase() + "-tier";
     console.log(`Creating subscription with tierId: ${tierId}`);
-    const s = await tx.subscription.create({
-      data: {
-        customerId,
-        id,
-        active,
-        startDate,
-        endDate,
-        priceId,
-        tier: { connect: { id: tierId } },
-        ...(teamId && { team: { connect: { id: teamId } } }),
-        ...(userId && { user: { connect: { id: userId } } }),
-      },
-    });
-    console.log("Created subscription: ", s, " for userId: ", userId, " and teamId: ", teamId);
-  return s;
+    try {
+      const s = await tx.subscription.create({
+        data: {
+          customerId,
+          id,
+          active,
+          startDate,
+          endDate,
+          priceId,
+          tierId,
+          userId,
+        },
+      });
+      console.log("Created subscription: ", s, " for userId: ", userId);
+      return s;
+    } catch (error) {
+      console.error("Error creating subscription: ", error);
+      throw new Error(`Failed to create subscription: ${error}`);
+    }
   });
 };
 
