@@ -1,7 +1,7 @@
 import { redis } from './redis';
 import { prisma } from './prisma';
 
-export async function getUsage(entityId: string, entityType: 'user' | 'team', resourceType: string): Promise<number> {
+export async function getUsage(entityId: string, entityType: 'user' | 'team' | 'system', resourceType: string): Promise<number> {
   // First try to get from Redis cache
   const key = `usage:${entityType}:${entityId}:${resourceType}`;
   const cachedValue = await redis.get<number>(key);
@@ -26,11 +26,14 @@ export async function getUsage(entityId: string, entityType: 'user' | 'team', re
 
 export async function trackUsage(
   entityId: string,
-  entityType: 'user' | 'team',
+  entityType: 'user' | 'team' | 'system',
   resourceType: string,
   incrementBy: number = 1
 ): Promise<number> {
   const key = `usage:${entityType}:${entityId}:${resourceType}`;
+  
+  // Ensure Redis connection
+  await redis.connect();
   
   // Update Redis cache
   const newRedisUsage = await redis.increment(key, incrementBy);
@@ -60,7 +63,7 @@ export async function trackUsage(
 
 export async function resetUsage(
   entityId: string,
-  entityType: 'user' | 'team',
+  entityType: 'user' | 'team' | 'system',
   resourceType: string
 ): Promise<void> {
   const key = `usage:${entityType}:${entityId}:${resourceType}`;
@@ -80,33 +83,47 @@ export async function resetUsage(
   }).catch(() => {}); // Ignore if record doesn't exist
 }
 
-export async function checkUsageLimit(
-  entityId: string,
-  entityType: 'user' | 'team',
-  resourceType: string
-): Promise<{
+export interface UsageCheckResult {
   allowed: boolean;
   currentUsage: number;
-  limit?: number
-}> {
+  limit?: number;
+}
+
+export async function checkUsageLimit(
+  entityId: string,
+  entityType: 'user' | 'team' | 'system',
+  resourceType: string
+): Promise<UsageCheckResult> {
+  // System entities have no usage limits
+  if (entityType === 'system') {
+    return {
+      allowed: true,
+      currentUsage: 0,
+      limit: undefined
+    };
+  }
+
+  // retrieve with relation of subscriptions.tier for user models
+  // and tier for team models
+
   const entity = entityType === 'user'
     ? await prisma.user.findUnique({
         where: { id: entityId },
-        include: { tier: true }
+        include: { subscriptions: { include: { tier: true } }}
       })
     : await prisma.team.findUnique({
         where: { id: entityId },
-        include: { tier: true }
+        include: { subscriptions: { include: { tier: true } }}
       });
-  let tier = entity?.tier;
+  let tier = entity?.subscriptions[0]?.tier || null;
   // Handle case where entity doesn't exist or doesn't have a tier
-  if (!entity || !('tier' in entity) || !entity.tier) {
+  if (!entity || !('subscriptions' in entity) || !entity.subscriptions[0]?.tier) {
     tier = await prisma.tier.findFirst({
       where: {
-        name: 'basic-tier' // Default tier if entity doesn't have one
+        id: 'basic-tier' 
       }
     });
-  } 
+  }
 
   const currentUsage = await getUsage(entityId, entityType, resourceType);
   
@@ -114,8 +131,13 @@ export async function checkUsageLimit(
   let limit: number | undefined;
   if (tier?.limits) {
     try {
-      const limits = JSON.parse(JSON.stringify(tier.limits));
-      limit = limits[resourceType];
+      // Attempt to parse limits as JSON if it's a string
+      if (typeof tier.limits === 'string') {
+        limit = JSON.parse(tier.limits)[resourceType];
+      } else if (typeof tier.limits === 'object') {
+        // If limits is already an object, access directly
+        limit = tier.limits[resourceType];
+      }
     } catch (e) {
       console.error('Error parsing tier limits', e);
     }
@@ -126,6 +148,7 @@ export async function checkUsageLimit(
     limit = tier?.maxApiCalls;
   }
   
+  console.log(`===Usage check for ${entityType} ${entityId} on resource ${resourceType}: currentUsage=${currentUsage}, limit=${limit}`);
   if (limit === undefined || limit === null) {
     return { allowed: true, currentUsage, limit: undefined };
   }

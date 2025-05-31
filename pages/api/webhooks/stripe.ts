@@ -52,7 +52,7 @@ export default async function POST(req: NextApiRequest, res: NextApiResponse) {
   if (relevantEvents.includes(event.type)) {
     try {
       console.log(
-        `===Received relevant Stripe event: ${event.type} - ${event.id}`
+        `===Received relevant Stripe event: ${event.type} - ${event.id}: {${JSON.stringify(event.data.object, null, 2)}}`
       );
       switch (event.type) {
         case 'customer.subscription.created':

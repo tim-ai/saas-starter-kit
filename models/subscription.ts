@@ -20,18 +20,31 @@ export const createStripeSubscription = async ({
   teamId?: string;
   userId?: string;
 }) => {
-  return await prisma.subscription.create({
-    data: {
-      customerId,
-      id,
-      active,
-      startDate,
-      endDate,
-      priceId,
-      //tier: { connect: { id: tierId } },
-      ...(teamId && { team: { connect: { id: teamId } } }),
-      ...(userId && { user: { connect: { id: userId } } }),
-    },
+  return await prisma.$transaction(async (tx) => {
+
+    // Retrieve price record including its associated service
+    const price = await tx.price.findUnique({
+      where: { id: priceId },
+      include: { service: true },
+    });
+    if (!price) {
+      throw new Error(`Price with ID ${priceId} not found`);
+    }
+    const tierId = price.service?.name.toLocaleLowerCase() + "-tier";
+    const s = await tx.subscription.create({
+      data: {
+        customerId,
+        id,
+        active,
+        startDate,
+        endDate,
+        priceId,
+        tier: { connect: { id: tierId } },
+        ...(teamId && { team: { connect: { id: teamId } } }),
+        ...(userId && { user: { connect: { id: userId } } }),
+      },
+    });
+  return s;
   });
 };
 
@@ -44,11 +57,47 @@ export const deleteStripeSubscription = async (id: string) => {
 };
 
 export const updateStripeSubscription = async (id: string, data: any) => {
-  return await prisma.subscription.update({
-    where: {
-      id,
-    },
-    data,
+  return await prisma.$transaction(async (tx) => {
+    // Update the subscription
+    const updatedSubscription = await tx.subscription.update({
+      where: { id },
+      data,
+    });
+
+    // If the subscription belongs to a user, update the user's tierId based on the new price
+    if (updatedSubscription.userId) {
+      // Determine the priceId to use: if updated data has a new priceId, use it; otherwise, use the existing one.
+      const currentPriceId = data.priceId || updatedSubscription.priceId;
+      if (currentPriceId) {
+        // Retrieve price record including its associated service
+        const price = await tx.price.findUnique({
+          where: { id: currentPriceId },
+          include: { service: true },
+        });
+        if (price && price.service) {
+          // Find a tier whose name matches the service name
+          const tier = await tx.tier.findUnique({
+            where: { name: price.service.name },
+          });
+          if (!tier) {
+            throw new Error(`Tier for service ${price.service.name} not found`);
+          }
+          // If a matching tier exists, update the user's tierId; if not, clear it.
+          await tx.subscription.update({
+            where: { id: updatedSubscription.id },
+            data: {  tier: { connect: { id: tier.id } },
+            },
+          });
+        } 
+      } else {
+        // No priceId provided; clear the user's tierId.
+        console.warn(
+          `No priceId provided for subscription ${id}. User's tierId will not be updated.`
+        );
+      }
+    }
+
+    return updatedSubscription;
   });
 };
 

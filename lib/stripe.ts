@@ -37,9 +37,7 @@ export async function getStripeCustomerId(teamMember, session?: any) {
 export async function getStripeCustomerIdForUser(user, session?: any) {
   let customerId = '';
   
-  console.log('===Fetching Stripe customer ID for user:', user, env.stripe);
   if (env.stripe.userBillingEnabled) {
-    console.log('===User billing is enabled, fetching customer ID for user:', user);
     if (!user.billingId) {
       const customerData: Stripe.CustomerCreateParams = {
         metadata: { userId: user.id },

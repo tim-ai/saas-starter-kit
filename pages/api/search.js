@@ -1,7 +1,13 @@
 import axios from 'axios';
 import { getSession } from '@/lib/session';
 
-export default async function handler(req, res) {
+import { withApiTrackingOnly } from '@/lib/apiUsageMiddleware';
+
+export default withApiTrackingOnly(handler, {
+  resourceType: 'views',
+});
+
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }

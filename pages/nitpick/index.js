@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
 import { GoogleMap, LoadScript, Autocomplete, Marker } from '@react-google-maps/api';
 import HouseListingCard from '../../components/HouseListingCard'; // <-- Updated import
-import PropertyCard from '../../components/PropertyCard';
 import NitpickList from '../../components/NitpickList';
 import styles from './index.module.css';
 import { transformNitpick } from '@/lib/nitpick';

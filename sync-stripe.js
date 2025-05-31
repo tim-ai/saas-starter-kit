@@ -27,9 +27,17 @@ const sync = async () => {
         ...seedFixedTiers(prisma),
         ...seedServices(products.data, prisma),
         ...seedPrices(prices.data, prisma),
-        ...seedSubscriptions(subscriptions.data, prisma),
+        //...seedSubscriptions(subscriptions.data, prisma),
       ];
       await prisma.$transaction(operations);
+
+      // now seed subscriptions
+      await Promise.all(
+        seedSubscriptions(subscriptions.data, prisma)
+      );
+
+      console.log('Syncing prices and services...');
+     
       await printStats(prisma);
 
       console.log('Sync completed successfully');
@@ -178,13 +186,24 @@ function seedFixedTiers(prisma) {
 }
 
 function seedSubscriptions(subscriptions, prisma) {
-  return subscriptions.map((data) => {
+  return subscriptions.map(async (data) => {
     // Get the priceId from the first subscription item (assumes at least one item exists)
     const priceId =
       data.items && data.items.data && data.items.data.length > 0
         ? data.items.data[0].price.id
         : null;
 
+    const price = await prisma.price.findUnique({
+      where: { id: priceId },
+      include: { service: true },
+    });
+    if (!price) {
+      console.warn(`No price found for subscription ${data.id}, skipping.`);
+      return Promise.resolve(); // Skip this subscription if no priceId
+    }
+    //console.log("Found price for subscription:", price);
+    const tierId = price.service.name.toLowerCase() + '-tier'; 
+    console.log(`Processing subscription ${data.id} for service ${price.service.name} with tierId ${tierId}`);
     return prisma.subscription.create({
       data: {
         id: data.id,
@@ -194,6 +213,7 @@ function seedSubscriptions(subscriptions, prisma) {
         startDate: new Date(data.current_period_start * 1000),
         endDate: new Date(data.current_period_end * 1000),
         cancelAt: data.cancel_at ? new Date(data.cancel_at * 1000) : null,
+        tierId: tierId, // Assuming the tierId is derived from the service name
         // createdAt and updatedAt will default to now() per your Prisma schema
       },
     });
