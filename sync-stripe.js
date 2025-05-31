@@ -187,6 +187,7 @@ function seedFixedTiers(prisma) {
 
 function seedSubscriptions(subscriptions, prisma) {
   return subscriptions.map(async (data) => {
+    console.log("data", data);
     // Get the priceId from the first subscription item (assumes at least one item exists)
     const priceId =
       data.items && data.items.data && data.items.data.length > 0
@@ -203,7 +204,17 @@ function seedSubscriptions(subscriptions, prisma) {
     }
     //console.log("Found price for subscription:", price);
     const tierId = price.service.name.toLowerCase() + '-tier'; 
-    console.log(`Processing subscription ${data.id} for service ${price.service.name} with tierId ${tierId}`);
+
+    // get user id from the customer field
+    const user = await prisma.user.findUnique({
+      where: { billingId: data.customer },
+    });
+    if (!user) {
+      console.warn(`No user found for customer ${data.customer}, skipping subscription ${data.id}.`);
+      return Promise.resolve(); // Skip this subscription if no user found
+    }
+
+    console.log(`Processing subscription ${data.id} for service ${price.service.name} with tierId ${tierId}, userId ${user.id}`);
     return prisma.subscription.create({
       data: {
         id: data.id,
@@ -214,6 +225,7 @@ function seedSubscriptions(subscriptions, prisma) {
         endDate: new Date(data.current_period_end * 1000),
         cancelAt: data.cancel_at ? new Date(data.cancel_at * 1000) : null,
         tierId: tierId, // Assuming the tierId is derived from the service name
+        userId: user.id, // Link to the user based on the billingId
         // createdAt and updatedAt will default to now() per your Prisma schema
       },
     });

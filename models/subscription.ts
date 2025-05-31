@@ -31,6 +31,7 @@ export const createStripeSubscription = async ({
       throw new Error(`Price with ID ${priceId} not found`);
     }
     const tierId = price.service?.name.toLocaleLowerCase() + "-tier";
+    console.log(`Creating subscription with tierId: ${tierId}`);
     const s = await tx.subscription.create({
       data: {
         customerId,
@@ -44,6 +45,7 @@ export const createStripeSubscription = async ({
         ...(userId && { user: { connect: { id: userId } } }),
       },
     });
+    console.log("Created subscription: ", s, " for userId: ", userId, " and teamId: ", teamId);
   return s;
   });
 };
