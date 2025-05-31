@@ -1,7 +1,10 @@
 import { getSession } from '@/lib/session';
 import { getCookie } from 'cookies-next';
+import { withApiUsage } from '@/lib/apiUsageMiddleware';
 
-export default async function handler(req, res) {
+export default withApiUsage(handler);
+
+async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Transfer-Encoding', 'chunked');

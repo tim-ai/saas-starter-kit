@@ -109,7 +109,12 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
       const lng = markerPosition?.lng || "";
       const response = await fetch(`/api/nitpick?lat=${lat}&lng=${lng}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'entity-id': userId || '',
+          'entity-type': 'user',
+          'resource-type': 'views'
+        },
         body: JSON.stringify({ address }),
         signal: abortController.signal,
       });

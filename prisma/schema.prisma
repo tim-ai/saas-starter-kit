@@ -172,30 +172,32 @@ model ApiKey {
 
 model Tier {
   id          String    @id @default(uuid())
+
   name        String
   description String?
-  maxUsers    Int       @default(1)
+  features    String[]   @default([])
+  maxTeams    Int       @default(1)
   maxStorage  Int       @default(1024) // in MB
   maxApiCalls Int       @default(1000) // per day
-  price       Float?
+  price       Int       @default(0) // in cents
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  requestLimit Int      @default(1000) // Monthly request limit
-  usageLimit   Int?     @default(1000) // For backward compatibility
-  storageLimit Int      @default(10)   // Storage in GB
   priceType   String    @default("recurring") // "recurring" or "one-time"
   
   // Upper limits for usage tracking
   limits      Json?     @default("{}")
   
   // Reference to service
-  serviceId   String?
-  service     Service?  @relation(fields: [serviceId], references: [id])
+  // serviceId   String?
+  // service     Service?  @relation(fields: [serviceId], references: [id])
   
   // Inverse relations
   users         User[]
   teams         Team[]
   // subscriptions Subscription[]
+  
+  @@unique([name])
+  @@index([name])
 }
 
 model Subscription {
@@ -223,7 +225,6 @@ model Subscription {
   @@index([customerId])
   @@index([teamId])
   @@index([userId])
-  // @@index([tierId])
 }
 
 model Service {
@@ -236,7 +237,6 @@ model Service {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
   Price       Price[]
-  tiers       Tier[]   // Add relationship to Tier model
 }
 
 model Price {

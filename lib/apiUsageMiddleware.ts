@@ -5,9 +5,10 @@ export function withApiUsage(handler: (req: NextApiRequest, res: NextApiResponse
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const entityId = req.headers['entity-id'] as string || 'system';
     const entityType = req.headers['entity-type'] as 'user' | 'team' || 'system';
+    const resourceType = req.headers['resource-type'] as string || 'api-request';
 
     // Check usage limits before processing
-    const usageCheck = await checkUsageLimit(entityId, entityType);
+    const usageCheck = await checkUsageLimit(entityId, entityType, resourceType);
     
     if (!usageCheck.allowed) {
       // Return custom quota exceeded page
@@ -25,7 +26,7 @@ export function withApiUsage(handler: (req: NextApiRequest, res: NextApiResponse
 
     // Track usage and proceed if within limits
     try {
-      await trackUsage(entityId, entityType, 1);
+      await trackUsage(entityId, entityType, resourceType, 1);
     } catch (error) {
       console.error('Usage tracking failed:', error);
     }

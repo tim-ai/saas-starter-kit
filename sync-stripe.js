@@ -24,6 +24,7 @@ const sync = async () => {
     if (prices.data.length > 0 && products.data.length > 0) {
       const operations = [
         ...cleanup(prisma),
+        ...seedFixedTiers(prisma),
         ...seedServices(products.data, prisma),
         ...seedPrices(prices.data, prisma),
         ...seedSubscriptions(subscriptions.data, prisma),
@@ -69,11 +70,13 @@ async function printStats(prisma) {
 function cleanup(prisma) {
   return [
     // Delete all prices from the database
-    prisma.price.deleteMany({}),
+    prisma.price.deleteMany(),
     // Delete all products (services) from the database
-    prisma.service.deleteMany({}),
+    prisma.service.deleteMany(),
     // Delete all subscriptions from the database
-    prisma.subscription.deleteMany({}),
+    prisma.subscription.deleteMany(),
+    // Delete all tiers that are tied to a service (if needed)
+    prisma.tier.deleteMany(),
   ];
 }
 
@@ -115,7 +118,61 @@ function seedServices(products, prisma) {
         image: data.images.length > 0 ? data.images[0] : '',
         name: data.name,
         created: new Date(data.created * 1000),
+        // // Create a tier for this service
+        // tiers: {
+        //   create: {
+        //     name: data.name,
+        //     // Set defaults: the model has defaults for other fields
+        //   }
+        // }
       },
+    })
+  );
+}
+
+// Create fixed tiers (Basic, Pro, Premium)
+function seedFixedTiers(prisma) {
+  const fixedTiers = [
+    {
+      id: 'basic-tier',
+      name: 'Basic',
+      description: 'Basic tier',
+      features: ['1 Team', '50 Views Per Day', '10MB Storage', '1 Customized AI Analysis Per Week'],
+      maxTeams: 1,
+      maxStorage: 1024,
+      maxApiCalls: 1000,
+      price: 0,
+      limits: JSON.stringify({ views: 5, analysis: 1 }),
+    },
+    {
+      id: 'pro-tier',
+      name: 'Pro',
+      description: 'Pro tier',
+      features: ['5 Teams', '1000 Views Per Day', '200MB Storage', '100 Customized AI Analysis Per Week'],
+      maxTeams: 5,
+      maxStorage: 10240,
+      maxApiCalls: 10000,
+      price: 2900,
+      limits: JSON.stringify({ views: 1000, analysis: 100 }),
+    },
+    {
+      id: 'premium-tier',
+      name: 'Premium',
+      description: 'Premium tier',
+      features: ['50 Teams', '10000 Views Per Day', '1000MB Storage', '1000 Customized AI Analysis Per Week'],
+      maxTeams: 50,
+      maxStorage: 102400,
+      maxApiCalls: 100000,
+      price: 4900,
+      limits: JSON.stringify({ views: 10000, analysis: 1000 }),
+    },
+  ];
+
+  return fixedTiers.map(tier =>
+    prisma.tier.upsert({
+      where: { id: tier.id },
+      update: tier,
+      create: tier
     })
   );
 }

@@ -1,6 +1,5 @@
 import { redis } from './redis';
 import { prisma } from './prisma';
-import type { User, Team } from '@prisma/client';
 
 export async function getUsage(entityId: string, entityType: 'user' | 'team', resourceType: string): Promise<number> {
   // First try to get from Redis cache
@@ -36,25 +35,25 @@ export async function trackUsage(
   // Update Redis cache
   const newRedisUsage = await redis.increment(key, incrementBy);
   
-  // Update database
-  await prisma.resourceUsage.upsert({
-    where: {
-      entityId_entityType_resourceType: {
-        entityId,
-        entityType,
-        resourceType
-      }
-    },
-    create: {
-      entityId,
-      entityType,
-      resourceType,
-      usage: newRedisUsage
-    },
-    update: {
-      usage: newRedisUsage
-    }
-  });
+  // // Update database
+  // await prisma.resourceUsage.upsert({
+  //   where: {
+  //     entityId_entityType_resourceType: {
+  //       entityId,
+  //       entityType,
+  //       resourceType
+  //     }
+  //   },
+  //   create: {
+  //     entityId,
+  //     entityType,
+  //     resourceType,
+  //     usage: newRedisUsage
+  //   },
+  //   update: {
+  //     usage: newRedisUsage
+  //   }
+  // });
   
   return newRedisUsage;
 }
@@ -99,18 +98,21 @@ export async function checkUsageLimit(
         where: { id: entityId },
         include: { tier: true }
       });
-
+  let tier = entity?.tier;
   // Handle case where entity doesn't exist or doesn't have a tier
   if (!entity || !('tier' in entity) || !entity.tier) {
-    return { allowed: true, currentUsage: 0 };
-  }
+    tier = await prisma.tier.findFirst({
+      where: {
+        name: 'basic-tier' // Default tier if entity doesn't have one
+      }
+    });
+  } 
 
-  const tier = entity.tier;
   const currentUsage = await getUsage(entityId, entityType, resourceType);
   
   // Check if limits JSON has specific limit for this resource type
   let limit: number | undefined;
-  if (tier.limits) {
+  if (tier?.limits) {
     try {
       const limits = JSON.parse(JSON.stringify(tier.limits));
       limit = limits[resourceType];
@@ -119,9 +121,9 @@ export async function checkUsageLimit(
     }
   }
   
-  // Fallback to requestLimit if no specific limit found
+  // Fallback to maxApiCalls if no specific limit found
   if (limit === undefined) {
-    limit = tier.requestLimit;
+    limit = tier?.maxApiCalls;
   }
   
   if (limit === undefined || limit === null) {

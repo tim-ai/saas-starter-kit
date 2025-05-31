@@ -36,7 +36,7 @@ import { maxLengthPolicies } from '@/lib/common';
 import { forceConsume } from '@/lib/server-common';
 import { getOrCreateStripeCustomer } from '@/lib/stripe';
 
-const adapter = PrismaAdapter(prisma);
+const adapter = PrismaAdapter(prisma as typeof PrismaClient);
 const providers: Provider[] = [];
 const sessionMaxAge = 14 * 24 * 60 * 60; // 14 days
 const useSecureCookie = env.appUrl.startsWith('https://');

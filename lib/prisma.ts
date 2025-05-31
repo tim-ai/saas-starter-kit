@@ -104,10 +104,8 @@ function createExtendedPrismaClient() {
   return new PrismaClient().$extends(cachingExtension);
 }
 
-const prismaInstance = global.prisma || createExtendedPrismaClient();
-
-export const prisma = prismaInstance;
+export const prisma = global.prisma || createExtendedPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prismaInstance;
+  global.prisma = prisma;
 }
