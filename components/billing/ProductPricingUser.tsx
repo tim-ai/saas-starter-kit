@@ -40,8 +40,19 @@ const ProductPricing = ({ plans, subscriptions, tiers }: ProductPricingProps) =>
     }
   };
 
-  const hasActiveSubscription = (price: Price) =>
-    subscriptions.some((s) => s.priceId === price.id);
+  const hasActiveSubscription = (plan: any, price: Price) => {
+    // check if user has any active subscription
+    const hasActiveSubscription = subscriptions && subscriptions.length > 0;
+  
+    const subscribed = subscriptions.some((s) => s.priceId === price.id);
+    if (!subscribed) {
+      if (!hasActiveSubscription && plan?.name.toLowerCase() === 'basic') {
+        return true; // Basic plan is always active for all users
+      }
+    } else {
+      return true;
+    }
+  }
 
    return (
     <section className="bg-slate-50 dark:bg-slate-900 py-12 sm:py-16 lg:py-20">
@@ -57,7 +68,11 @@ const ProductPricing = ({ plans, subscriptions, tiers }: ProductPricingProps) =>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
           {plans.map((plan) => {
-            const tier = tiers.find((t) => t.name.toLowerCase() === plan.name.toLowerCase());
+            let tier = tiers.find((t) => t.name.toLowerCase() === plan.name.toLowerCase());
+            if (!tier) {
+              tier = tiers[0]; // Fallback to the first tier if not found
+            }
+
             return (
               <div
                 className={`
@@ -121,7 +136,7 @@ const ProductPricing = ({ plans, subscriptions, tiers }: ProductPricingProps) =>
                          
                         </div>
 
-                        {hasActiveSubscription(price) ? (
+                        {hasActiveSubscription(plan, price) ? (
                           <Button
                             variant="outline" // DaisyUI variant
                             color="ghost" // More subtle for "current"
