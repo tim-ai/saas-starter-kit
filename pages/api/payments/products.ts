@@ -4,7 +4,8 @@ import { getStripeCustomerIdForUser } from '@/lib/stripe';
 import { getSession } from '@/lib/session';
 import { getAllServices } from 'models/service';
 import { getAllPrices } from 'models/price';
-import { getByCustomerId } from 'models/subscription';
+import { getByCustomerId, getTiers } from 'models/subscription';
+
 
 export default async function handler(
   req: NextApiRequest,
@@ -37,10 +38,11 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
   const user = session.user;
   const customerId = await getStripeCustomerIdForUser(user, session);
 
-  const [subscriptions, products, prices] = await Promise.all([
+  const [subscriptions, products, prices, tiers] = await Promise.all([
     getByCustomerId(customerId),
     getAllServices(),
     getAllPrices(),
+    getTiers(),
   ]);
 
   // create a unified object with prices associated with the product
@@ -82,6 +84,7 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
     data: {
       products: productsWithPrices,
       subscriptions: (_subscriptions || []).filter((s) => !!s),
+      tiers: tiers
     },
   });
 };

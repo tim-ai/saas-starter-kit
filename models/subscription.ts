@@ -140,6 +140,9 @@ export const getByCustomerId = async (customerId: string) => {
       customerId,
       active: true, // Only return active subscriptions
     },
+    include: {
+      tier: true, // Include tier information
+    }
   });
 };
 
@@ -152,3 +155,7 @@ export const getBySubscriptionId = async (
     },
   });
 };
+
+export const getTiers = async () => {
+  return await prisma.tier.findMany();
+}

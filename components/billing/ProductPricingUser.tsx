@@ -9,9 +9,10 @@ import { Service, Subscription } from '@prisma/client';
 interface ProductPricingProps {
   plans: any[];
   subscriptions: (Subscription & { product: Service })[];
+  tiers: any[];
 }
 
-const ProductPricing = ({ plans, subscriptions }: ProductPricingProps) => {
+const ProductPricing = ({ plans, subscriptions, tiers }: ProductPricingProps) => {
   const { t } = useTranslation('common');
 
   const initiateCheckout = async (price: string, quantity?: number) => {
@@ -56,6 +57,7 @@ const ProductPricing = ({ plans, subscriptions }: ProductPricingProps) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
           {plans.map((plan) => {
+            const tier = tiers.find((t) => t.name.toLowerCase() === plan.name.toLowerCase());
             return (
               <div
                 className={`
@@ -76,33 +78,35 @@ const ProductPricing = ({ plans, subscriptions }: ProductPricingProps) => {
                     <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
                       {plan.name}
                     </h3>
-                    <p className="mt-2 text-slate-500 dark:text-slate-400 text-sm min-h-[3rem] sm:min-h-[4rem]"> {/* Consistent height for description */}
-                      {plan.description}
-                    </p>
                   </div>
 
-                  {/* Features Section */}
-                  <ul className="space-y-3 text-sm flex-grow mb-8">
-                    {plan.features.map((feature: string) => (
-                      <li className="flex items-start" key={`${plan.id}-${feature}`}>
-                        <svg
-                          className="flex-shrink-0 h-5 w-5 text-green-500 dark:text-green-400 mr-2 mt-0.5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2.5} // Adjusted stroke width
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        <span className="text-slate-700 dark:text-slate-300">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Modern features list with enhanced styling */}
+                  <div className="flex-grow mb-6">
+                    <ul className="space-y-4">
+                      {tier.features.map((feature: string) => (
+                        <li className="flex items-start group" key={`${plan.id}-${feature}`}>
+                          {/* Sleek check icon with animation */}
+                          <div className="flex-shrink-0 mt-1">
+                            <svg
+                              className="h-5 w-5 text-indigo-600 dark:text-indigo-400 transition-transform group-hover:scale-110"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                          <span className="ml-3 text-slate-700 dark:text-slate-300 font-medium transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
 
                   {/* Prices & CTAs Section - Pushed to bottom */}
                   <div className="mt-auto">

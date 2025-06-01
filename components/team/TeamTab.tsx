@@ -5,7 +5,7 @@ import {
   PaperAirplaneIcon,
   ShieldExclamationIcon,
   UserPlusIcon,
-  BanknotesIcon,
+  // BanknotesIcon,
 } from '@heroicons/react/24/outline';
 import type { Team } from '@prisma/client';
 import classNames from 'classnames';
@@ -77,17 +77,17 @@ const TeamTab = ({ activeTab, team, heading, teamFeatures }: TeamTabProps) => {
     });
   }
 
-  if (
-    teamFeatures.payments &&
-    canAccess('team_payments', ['create', 'update', 'read', 'delete'])
-  ) {
-    navigations.push({
-      name: 'Billing',
-      href: `/teams/${team.slug}/billing`,
-      active: activeTab === 'payments',
-      icon: BanknotesIcon,
-    });
-  }
+  // if (
+  //   teamFeatures.payments &&
+  //   canAccess('team_payments', ['create', 'update', 'read', 'delete'])
+  // ) {
+  //   navigations.push({
+  //     name: 'Billing',
+  //     href: `/teams/${team.slug}/billing`,
+  //     active: activeTab === 'payments',
+  //     icon: BanknotesIcon,
+  //   });
+  // }
 
   if (
     teamFeatures.webhook &&

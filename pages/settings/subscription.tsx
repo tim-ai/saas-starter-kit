@@ -30,14 +30,14 @@ const Subscription = () => {
 
   const plans = data?.data?.products || [];
   const subscriptions = data?.data?.subscriptions || [];
-
+  const tiers  = data?.data?.tiers || [];
   return (
     <>
       {(
         <>
 
-          <ProductPricing plans={plans} subscriptions={subscriptions} />
-          
+          <ProductPricing plans={plans} subscriptions={subscriptions} tiers={tiers} />
+
         </>
       )}
     </>
