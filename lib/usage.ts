@@ -68,19 +68,34 @@ export async function resetUsage(
 ): Promise<void> {
   const key = `usage:${entityType}:${entityId}:${resourceType}`;
   
-  // Clear Redis cache
-  await redis.del(key);
+  // Get current Redis usage value (default to 0 if not set)
+  const redisUsage = (await redis.get<number>(key)) ?? 0;
   
-  // Clear database record
-  await prisma.resourceUsage.delete({
+  // Update the database record by adding the Redis usage,
+  // or create a new record if it doesn't exist
+  await prisma.resourceUsage.upsert({
     where: {
       entityId_entityType_resourceType: {
         entityId,
         entityType,
         resourceType
       }
+    },
+    create: {
+      entityId,
+      entityType,
+      resourceType,
+      usage: redisUsage,
+    },
+    update: {
+      usage: {
+        increment: redisUsage,
+      },
     }
-  }).catch(() => {}); // Ignore if record doesn't exist
+  });
+  
+  // Clear Redis cache
+  await redis.del(key);
 }
 
 export interface UsageCheckResult {

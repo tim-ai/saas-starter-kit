@@ -18,7 +18,6 @@ import useTeams from 'hooks/useTeams';
 import { getCookie, setCookie } from 'cookies-next';
 import { useRouter } from 'next/router'; 
 
-
 const Header = () => {
   const { toggleTheme } = useTheme();
   const { status, data } = useSession();
@@ -30,7 +29,7 @@ const Header = () => {
   const { teams } = useTeams();
   const router = useRouter();
   const [currentTeam, setCurrentTeam] = useState<any>(null);
-// Separate onSelectTeam function
+
   const handleSelectTeam = useCallback((teamId: string) => {
     setCookie('currentTeamId', teamId, { maxAge: 60 * 60 * 24 * 7 });
   }, []);
@@ -58,7 +57,6 @@ const Header = () => {
       }
     }
   
-    // If no cookie found then try to set by router query or default to first team.
     if (teams && teams.length > 0) {
       const teamFromQuery = teams.find((team) => team.slug === router.query.slug);
       if (teamFromQuery) {
@@ -78,27 +76,25 @@ const Header = () => {
     <header className={styles.header}>
       <div className={styles.container}>
         <div className={styles.inner}>
-          {/* <button
-            type="button"
-            className={styles.mobileButton}
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-          </button> */}
-          <div className="logo-container">
-            <svg width="230" height="50" viewBox="0 0 230 50" xmlns="http://www.w3.org/2000/svg"> {/* Adjusted width slightly for Montserrat potentially */}
-                <g fill="none" stroke="#6B7280" stroke-width="2.5"> {/* Medium gray stroke */}
-                    <circle cx="25" cy="25" r="10"/>
-                    <line x1="32" y1="32" x2="40" y2="40"/>
-                </g>
-
-                {/* Changed font-family to Montserrat */}
-                <text x="55" y="32" font-family="Montserrat, Arial, sans-serif" font-size="18" font-weight="800" fill="#374151" text-transform="uppercase" > 
-                    NITPICKR
-                    <tspan fill="#4B5563">.NET</tspan> 
-                </text>
-              </svg>
-          </div>
+          {/* Logo wrapped in anchor linking to https://nitpickr.net */}
+          <Link href="/">
+            <svg width="230" height="50" viewBox="0 0 230 50" xmlns="http://www.w3.org/2000/svg">
+              <g fill="none" stroke="#6B7280" strokeWidth="2.5">
+                <circle cx="25" cy="25" r="10"/>
+                <line x1="32" y1="32" x2="40" y2="40"/>
+              </g>
+              <text 
+                x="55" 
+                y="32" 
+                fontFamily="Montserrat, Arial, sans-serif" 
+                fontSize="18" 
+                fontWeight="800" 
+                fill="#374151" 
+              > 
+                NITPICKR<tspan fill="#4B5563">.NET</tspan> 
+              </text>
+            </svg>
+          </Link>
 
           <nav className={styles.nav}>
             <Link href="/nitpick/search" className={styles.navItem}>
