@@ -4,7 +4,8 @@ import multer from 'multer';
 import { FileStorageService, UploadedFile } from '@/lib/storage/FileStorageService';
 import { prisma } from '@/lib/prisma';
 import { trackUsage } from '@/lib/usage';
-import { getAuthOptions, sessionTokenCookieName } from '@/lib/nextAuth';
+import { getAuthOptions } from '@/lib/nextAuth';
+import type { RequestHandler } from 'express';
 
 // Disable Next.js built-in body parsing so multer can handle multipart/form-data
 export const config = {
@@ -21,10 +22,11 @@ const upload = multer({ storage });
 function runMiddleware(
   req: NextApiRequest,
   res: NextApiResponse,
-  fn: Function
+  fn: RequestHandler
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
+    // Cast req/res to any so they satisfy Express types
+    fn(req as any, res as any, (result: any) => {
       if (result instanceof Error) {
         return reject(result);
       }
@@ -42,7 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Run multer middleware to parse multipart/form-data and attach files to req.files
   try {
-    await runMiddleware(req, res, upload.array('files'));
+    // Explicitly cast upload.array('files') to RequestHandler
+    await runMiddleware(req, res, upload.array('files') as RequestHandler);
   } catch (error) {
     console.error('Multer error:', error);
     return res.status(500).json({

@@ -7,7 +7,7 @@ export default function TestUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
 
-  const handleFilesSelected = (files: File[]) => {
+  const handleFilesSelected = () => {
     // Reset previous results
     setResults([]);
   };

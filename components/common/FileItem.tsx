@@ -1,4 +1,4 @@
-import { FileIcon, XIcon } from 'lucide-react';
+import { XIcon } from 'lucide-react';
 
 type FileItemProps = {
   file: {
