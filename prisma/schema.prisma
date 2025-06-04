@@ -77,6 +77,7 @@ model User {
   comments   IssueComment[]
   votes      IssueVote[]
   subscriptions Subscription[]
+  files       File[]      // User's uploaded files
 
   @@index([billingId])
   // @@index([tierId])
@@ -102,6 +103,7 @@ model Team {
   issueComments   IssueComment[] // new relation field: get issue comments associated with this team
   votes          IssueVote[]    // new relation field: get comment votes associated with this team
   subscriptions  Subscription[] // new relation to subscriptions
+  files          File[]         // Team's uploaded files
 
   // Reference to tier
   // tierId     String?
@@ -278,6 +280,8 @@ model RealEstate {
   listingUrl  String?
   listingSource String?
   images      String[]
+  propertyHistory Json? // JSON array of historical data (e.g. previous owners, renovations)
+  taxHistory Json? // JSON array of tax history records
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -483,3 +487,22 @@ model IssueVote {
 
 
 
+
+model File {
+  id          String   @id @default(uuid())
+  name        String
+  key         String   @unique
+  size        Int
+  contentType String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  metadata    Json?    // Additional metadata (EXIF, etc.)
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  teamId      String?
+  team        Team?    @relation(fields: [teamId], references: [id])
+
+  @@index([userId])
+  @@index([teamId])
+}
