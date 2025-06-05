@@ -36,17 +36,15 @@ async function handler(req, res) {
       const data = response.data;
       // test if hits in data
       if (!data || !data.hits) {
-        return res.status(404).json({ message: 'No listings found' });
-      }
-      const hits = data.hits;
-      if (hits.length === 0) {
-        return res.status(404).json({ message: 'No hits found' });
+        return res.status(200).json({ listings: [] });
       }
 
+      const hits = data.hits;
       const listings = hits.map((listing) => ({
         id: listing.id,
         address: listing.address,
         price: listing.price,
+        status: listing.status,
         beds: parseInt(listing.bedrooms),
         baths: parseFloat(listing.bathrooms),
         garage: parseInt(listing.garage),
@@ -64,7 +62,7 @@ async function handler(req, res) {
       res.status(200).json(listings);
     })
     .catch(error => {
-      console.error('Error fetching listings:', error.message);
+      console.error('Error fetching listings:', error);
       res.status(500).json({ error: 'Failed to fetch listings', message: error.message });
     });
 }

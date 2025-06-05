@@ -24,8 +24,10 @@ export default function MapMarkerWithInfo({
   };
 
   // Schedules closing (i.e. unhover) after delay
-  const scheduleClose = (delay = 300) => {
+  const scheduleClose = (delay = 400) => {
+    
     const timeout = setTimeout(() => {
+      if (!isHovered) return;
       setHoveredListingId(null);
     }, delay);
     setHoverTimeout(timeout);
@@ -66,11 +68,11 @@ export default function MapMarkerWithInfo({
           isHovered
             ? {
                 url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-                scaledSize: new window.google.maps.Size(50, 50),
+                scaledSize: new window.google.maps.Size(45, 45),
               }
             : {
                 url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                scaledSize: new window.google.maps.Size(40, 40),
+                scaledSize: new window.google.maps.Size(45, 45),
               }
         }
         onLoad={(markerInstance) => {

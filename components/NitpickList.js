@@ -68,7 +68,7 @@ export default function NitpickList({ nitpicks, hoveredListingId, setHoveredList
                 <div className={styles.price}>
                   ${nitpick.price?.toLocaleString()}
                 </div>
-                <div className={styles.town}>{nitpick.town}</div>
+                <div className={styles.town}>{nitpick.town} ({nitpick.status})</div>
               </div>
             </div>
             <div className={`${styles.cardFace} ${styles.cardBack}`}>
@@ -87,7 +87,7 @@ export default function NitpickList({ nitpicks, hoveredListingId, setHoveredList
 
               <h3>{nitpick.address}</h3>
               <p>
-                {nitpick.town}, {nitpick.state}
+                {nitpick.town}, {nitpick.status}
               </p>
               <div className={styles.meta}>
                 <span>{nitpick.beds} beds</span>

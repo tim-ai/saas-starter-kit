@@ -42,3 +42,7 @@
         @apply text-3xl;
     }
 }
+
+.detailLabel {
+  @apply text-xs text-gray-500 mb-1;
+}

@@ -103,8 +103,8 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted, on
               zIndex: 10,
             }}
           />
-        <div className={styles.price}>{formattedPrice}</div>
-        
+        <div className={styles.price}>{formattedPrice} <span className={styles.detailLabel}>  ({listing.status}) </span> </div>
+
       </div>
       {hovered && (
         <div className={styles.inspectOverlay}>
