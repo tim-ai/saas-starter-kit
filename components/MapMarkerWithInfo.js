@@ -12,6 +12,7 @@ export default function MapMarkerWithInfo({
   linkType = 'listing', // new input flag: "nitpick" or "listing"
 }) {
   const isHovered = String(hoveredListingId) === String(listing.id);
+  const isActive = listing.status.toLowerCase() === 'active' || listing.status.startsWith('FOR SALE');
   const markerRef = useRef(null);
   const infoWindowRef = useRef(null);
 
@@ -67,12 +68,16 @@ export default function MapMarkerWithInfo({
         icon={
           isHovered
             ? {
-                url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-                scaledSize: new window.google.maps.Size(45, 45),
+                url: isActive
+                  ? 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                  : 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                scaledSize: new window.google.maps.Size(35, 35),
               }
             : {
-                url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                scaledSize: new window.google.maps.Size(45, 45),
+                url: isActive
+                  ? 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                  : 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                scaledSize: new window.google.maps.Size(35, 35),
               }
         }
         onLoad={(markerInstance) => {

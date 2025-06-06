@@ -38,7 +38,8 @@
 .searchContainer {
   @apply mx-4 mb-8 relative text-sm;
   background-color: white;
-  padding: 16px;}
+  padding: 16px;
+}
 
 .searchInput {
   @apply flex-1 p-2 border-2 rounded text-sm transition-colors duration-300 ease-in-out  w-full; /* ensures the input takes available space */
@@ -57,7 +58,56 @@
 }
 
 .searchForm {
-  @apply flex  items-center gap-2;
+  @apply flex items-center gap-2;
+}
+
+/* Filter dropdown styles */
+.searchWithFilters {
+  @apply flex items-center gap-2 relative;
+}
+
+.filterDropdown {
+  @apply relative;
+}
+
+.dropdownToggle {
+  @apply bg-none border border-gray-300 rounded p-2 cursor-pointer flex items-center justify-center transition-colors;
+}
+
+.dropdownToggle:hover {
+  @apply bg-gray-100 border-gray-400;
+}
+
+.filterPanel {
+  @apply absolute top-full right-0 w-80 bg-white border border-gray-300 rounded-lg shadow-lg p-4 mt-2 z-10 flex flex-col gap-4;
+}
+
+.filterGroup {
+  @apply border-b border-gray-200 pb-3;
+}
+
+.filterGroup:last-child {
+  @apply border-b-0 pb-0;
+}
+
+.filterGroup h4 {
+  @apply text-gray-800 font-medium mb-2 text-sm;
+}
+
+.filterOption {
+  @apply flex items-center mb-1 cursor-pointer;
+}
+
+.filterOption input {
+  @apply mr-2;
+}
+
+.applyFilters {
+  @apply bg-blue-500 text-white py-2 px-4 rounded text-sm font-medium self-end mt-2 transition-colors;
+}
+
+.applyFilters:hover {
+  @apply bg-blue-600;
 }
 
 /* Dashboard and section cards */
