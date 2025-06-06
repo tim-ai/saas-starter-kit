@@ -31,7 +31,7 @@ const Header = () => {
   const [currentTeam, setCurrentTeam] = useState<any>(null);
 
   const handleSelectTeam = useCallback((teamId: string) => {
-    setCookie('currentTeamId', teamId, { maxAge: 60 * 60 * 24 * 7 });
+    setCookie('currentTeamId', teamId, { maxAge: 60 * 60 * 24 * 1 });
   }, []);
 
   const handleDropdownMouseEnter = () => {
@@ -57,14 +57,22 @@ const Header = () => {
       }
     }
   
+    // If no cookie or team not found, set the first team as current when no slug is present
+    if (teams && teams.length > 0 && !router.query.slug) {
+      setCurrentTeam(teams[0]);
+      setCookie('currentTeamId', teams[0].id, { maxAge: 60 * 60 * 24 * 1 });
+      return;
+    }
+
+
     if (teams && teams.length > 0) {
       const teamFromQuery = teams.find((team) => team.slug === router.query.slug);
       if (teamFromQuery) {
         setCurrentTeam(teamFromQuery);
-        setCookie('currentTeamId', teamFromQuery.id, { maxAge: 60 * 60 * 24 * 7 });
+        setCookie('currentTeamId', teamFromQuery.id, { maxAge: 60 * 60 * 24 * 1 });
       } else {
         setCurrentTeam(teams[0]);
-        setCookie('currentTeamId', teams[0].id, { maxAge: 60 * 60 * 24 * 7 });
+        setCookie('currentTeamId', teams[0].id, { maxAge: 60 * 60 * 24 * 1 });
       }
     }
   }, [teams, router.query.slug]);
