@@ -12,7 +12,21 @@ async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const searchTerm = req.body;
+  // parse req.body and make it an object
+  // Ensure req.body is parsed correctly to an object
+  let queryObj;
+  if (typeof req.body === 'string') {
+    try {
+      queryObj = JSON.parse(req.body);
+    } catch (error) {
+      return res.status(400).json({ message: 'Invalid JSON in request body' });
+    }
+  } else {
+    queryObj = req.body;
+  }
+
+  console.log("queryObj: ", queryObj)
+  const searchTerm = queryObj.query || "";
 
   // Validate search term
   if (searchTerm.length < 2) {

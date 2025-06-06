@@ -1,0 +1,59 @@
+.comparisonTable {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  background: white;
+}
+
+.comparisonTable table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.comparisonTable th, .comparisonTable td {
+  padding: 10px 15px;
+  text-align: center;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.comparisonTable th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  min-width: 150px;
+}
+
+.comparisonTable tr:last-child td {
+  border-bottom: none;
+}
+
+.listingHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.title {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.attribute {
+  text-align: right;
+  font-weight: 500;
+  background-color: #f8f9fa;
+}
+
+.value {
+  color: #495057;
+}

@@ -111,6 +111,9 @@ const Header = () => {
             <Link href="/nitpick" className={styles.navItem}>
               {t('Nitpick')}
             </Link>
+            <Link href="/nitpick/compare" className={styles.navItem}>
+              {t('Compare')}
+            </Link>
           </nav>
 
           <div className="flex items-center">

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { GoogleMap, LoadScript} from '@react-google-maps/api';
+import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { FaSpinner } from 'react-icons/fa';
 import axios from 'axios';
 import styles from './index.module.css';
@@ -95,13 +95,13 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     setLoading(true);
     try {
       const searchParams = {
-  query: searchTerm,
-  bedrooms: bedrooms,
-  bathrooms: bathrooms,
-  minPrice: minPrice,
-  maxPrice: maxPrice
-};
-const response = await axios.post(`/api/search`, searchParams);
+        query: searchTerm,
+        bedrooms: bedrooms,
+        bathrooms: bathrooms,
+        minPrice: minPrice,
+        maxPrice: maxPrice
+      };
+      const response = await axios.post(`/api/search`, searchParams);
       if (response.data.length === 0) {
         setMapError('No listings found for the specified location.');
         setLoading(false);
@@ -112,7 +112,7 @@ const response = await axios.post(`/api/search`, searchParams);
         ...listing,
         isFavorite: nitpicks.some((nitpick) => nitpick.id === listing.id),
       }));
-      
+
       setListings(listings);
       const first = listings[0];
       setMapCenter({ lat: first.lat, lng: first.lng });
@@ -146,7 +146,7 @@ const response = await axios.post(`/api/search`, searchParams);
             setHoveredListingId={setHoveredListingId}
             hoverTimeout={hoverTimeout}
             setHoverTimeout={setHoverTimeout}
-            onFavorite = {
+            onFavorite={
               async (listing) => {
                 if (!userId) {
                   console.error('User not logged in!');
@@ -195,7 +195,7 @@ const response = await axios.post(`/api/search`, searchParams);
                 ⚙️
               </button>
             </div>
-            
+
             {showAdvanced && (
               <div className={styles.advancedSettings}>
                 <div className={styles.filterGroup}>
@@ -337,10 +337,10 @@ export async function getServerSideProps(context) {
   const { locale } = context;
 
   return {
-    props: { 
+    props: {
       ...(locale ? await serverSideTranslations(locale, ['common']) : {}),
 
-      nitpicks 
+      nitpicks
     },
   };
 }

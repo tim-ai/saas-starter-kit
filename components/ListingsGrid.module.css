@@ -31,3 +31,22 @@
 .listingItem:hover {
   transform: scale(1.02);
 }
+
+/* Checkbox styles */
+.checkboxContainer {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+}
+
+.listingCheckbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #007bff;
+}
+
+.selectable {
+  position: relative;
+}

@@ -36,14 +36,18 @@ export default async function handler(req, res) {
       SELECT r.*, 
              MIN(CASE WHEN n."userId" = ${userId} THEN 0 ELSE 1 END) AS "userFlag",
              MAX(n."createdAt") AS "lastCreated",
-             MAX(n.id) AS "nid"
+             MAX(n.id) AS "nid",
+             json_agg(rei.*) AS "extraInfo",
+             json_agg(i.*) AS "issues"
       FROM "Nitpick" n
-      -- INNER JOIN "RealEstate" r ON n."realEstateId" = r.id
-      -- WHERE n."teamId" IS NULL OR n."teamId" = ${currentTeamId}
       INNER JOIN "RealEstate" r
         ON n."realEstateId" = r.id
         AND ( n."teamId" IS NULL
               OR n."teamId" = ${currentTeamId} )
+      LEFT JOIN "RealEstateExtraInfo" rei
+        ON rei."realEstateId" = r.id AND rei."type" = 'extraction'
+      LEFT JOIN "RealEstateIssue" i
+        ON i."realEstateId" = r.id
       GROUP BY r.id
       ORDER BY "userFlag", "lastCreated" DESC
     `;
