@@ -33,6 +33,11 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const [hoveredListingId, setHoveredListingId] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [bedrooms, setBedrooms] = useState('');
+  const [bathrooms, setBathrooms] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const submitButtonRef = useRef(null);
 
   const currentTeamId = getCookie('currentTeamId');
@@ -89,7 +94,14 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(`/api/search`, searchTerm);
+      const searchParams = {
+  query: searchTerm,
+  bedrooms: bedrooms,
+  bathrooms: bathrooms,
+  minPrice: minPrice,
+  maxPrice: maxPrice
+};
+const response = await axios.post(`/api/search`, searchParams);
       if (response.data.length === 0) {
         setMapError('No listings found for the specified location.');
         setLoading(false);
@@ -158,21 +170,76 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
       <div className={styles.searchContainer}>
         <header className={styles.searchHeader}>
           <form onSubmit={handleSearch} className={styles.searchForm}>
-            <input
-              type="text"
-              placeholder="Search Your Dream Home..."
-              className={styles.searchInput}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button
-              type="submit"
-              className={loading ? `${styles.searchButton} ${styles.loading}` : styles.searchButton}
-              disabled={loading}
-              ref={submitButtonRef}
-            >
-              {loading ? 'Processing...' : 'Search'}
-            </button>
+            <div className={styles.searchRow}>
+              <input
+                type="text"
+                placeholder="Search Your Dream Home..."
+                className={styles.searchInput}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button
+                type="submit"
+                className={loading ? `${styles.searchButton} ${styles.loading}` : styles.searchButton}
+                disabled={loading}
+                ref={submitButtonRef}
+              >
+                {loading ? 'Processing...' : 'Search'}
+              </button>
+              <button
+                type="button"
+                className={styles.advancedToggle}
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                title="Advanced search settings"
+              >
+                ⚙️
+              </button>
+            </div>
+            
+            {showAdvanced && (
+              <div className={styles.advancedSettings}>
+                <div className={styles.filterGroup}>
+                  <label>Bedrooms</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={bedrooms}
+                    onChange={(e) => setBedrooms(e.target.value)}
+                    placeholder="Any"
+                  />
+                </div>
+                <div className={styles.filterGroup}>
+                  <label>Bathrooms</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={bathrooms}
+                    onChange={(e) => setBathrooms(e.target.value)}
+                    placeholder="Any"
+                  />
+                </div>
+                <div className={styles.filterGroup}>
+                  <label>Min Price</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    placeholder="$ Min"
+                  />
+                </div>
+                <div className={styles.filterGroup}>
+                  <label>Max Price</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    placeholder="$ Max"
+                  />
+                </div>
+              </div>
+            )}
           </form>
         </header>
 
