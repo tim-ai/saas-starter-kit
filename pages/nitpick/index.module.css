@@ -36,13 +36,14 @@
 
 /* Search styles */
 .searchContainer {
-  @apply mx-4 mb-8 relative text-sm;
+  @apply mx-4 mb-8 relative text-xs  flex  gap-2;
   background-color: white;
+  flex-direction: column;
   padding: 16px;
 }
 
 .searchInput {
-  @apply flex-1 p-2 border-2 rounded text-sm transition-colors duration-300 ease-in-out  w-full; /* ensures the input takes available space */
+  @apply flex-1 p-2 border-2 rounded text-xs transition-colors duration-300 ease-in-out  w-full; /* ensures the input takes available space */
 }
 
 .searchInput:focus {
@@ -50,7 +51,7 @@
 }
 
 .searchButton {
-  @apply  p-3 bg-blue-500 text-white text-sm border-0 rounded-md cursor-pointer transition-colors duration-300 ease-in-out;
+  @apply  p-3 bg-blue-500 text-white text-xs border-0 rounded-md cursor-pointer transition-colors duration-300 ease-in-out;
 }
 
 .searchButton:disabled {
@@ -58,7 +59,12 @@
 }
 
 .searchForm {
-  @apply flex items-center gap-2;
+  @apply flex items-center gap-2 ;
+  flex-direction: column
+}
+
+.searchFormRow {
+  @apply flex items-center gap-2 ;
 }
 
 /* Filter dropdown styles */
@@ -389,12 +395,16 @@
 
 /* Advanced search components */
 .searchRow {
+  @apply flex items-center justify-between mb-4;
   display: flex;
+  width: 100%;
+
   gap: 0.5rem;
 }
 
 .searchInput {
-  flex: 1;
+  @apply text-xs;
+  width: 100%;
 }
 
 .advancedToggle {
@@ -411,6 +421,7 @@
 }
 
 .advancedSettings {
+  flex-basis: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;

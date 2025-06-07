@@ -213,7 +213,7 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
           }
         >
           <div name="searchHeader">
-            <form onSubmit={handleSubmit} className={styles.searchForm}>
+            <form onSubmit={handleSubmit} className={styles.searchFormRow}>
               <Autocomplete
                 className={styles.searchHeader}
                 onLoad={(autocomplete) => setAutocomplete(autocomplete)}

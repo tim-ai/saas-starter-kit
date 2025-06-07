@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
-import { FaSpinner } from 'react-icons/fa';
+import { FaSpinner, FaCog } from 'react-icons/fa';
 import axios from 'axios';
 import styles from './index.module.css';
 import NitpickList from '../../components/NitpickList';
@@ -186,14 +186,12 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
               >
                 {loading ? 'Processing...' : 'Search'}
               </button>
-              <button
-                type="button"
-                className={styles.advancedToggle}
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                title="Advanced search settings"
-              >
-                ⚙️
-              </button>
+              <FaCog
+  className={styles.advancedToggle}
+  onClick={() => setShowAdvanced(!showAdvanced)}
+  title="Advanced search settings"
+  style={{ cursor: 'pointer' }}
+/>
             </div>
 
             {showAdvanced && (
@@ -248,7 +246,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
           libraries={libraries}
           onError={() => setMapError('Failed to load Google Maps. Please check your API key.')}
         >
-          <div className={styles.mapContainer} style={{ margin: '0 auto', top: '0', zIndex: 10 }}>
+          <div className={styles.mapContainer} style={{ flex: '100%', margin: '0 auto', top: '0', zIndex: 10 }}>
             {!isMapLoaded && <div className={styles.mapLoading}>Loading map...</div>}
             <GoogleMap
               mapContainerStyle={mapContainerStyle}
