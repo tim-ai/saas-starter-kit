@@ -403,8 +403,7 @@
 }
 
 .searchInput {
-  @apply text-xs;
-  width: 100%;
+  @apply text-xs bg-gray-50 border border-gray-300 rounded p-2 w-full;
 }
 
 .advancedToggle {
