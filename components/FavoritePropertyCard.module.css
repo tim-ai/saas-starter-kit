@@ -48,14 +48,13 @@
 }
 
 .checkboxContainer {
-  @apply bg-gray-50;
   position: relative;
   display: flex;
   align-items: center;
-
 }
 
 .selectionCheckbox {
+  @apply bg-gray-50;
   position: relative;
   display: flex;
   align-items: center;
