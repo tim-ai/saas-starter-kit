@@ -168,7 +168,9 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                   Public Facts
                 </td>
                 {selectedListings.map(listing => {
-                  const publicSqft = listing.extraInfo?.[0].value?.public_facts?.total_sqft;
+                  console.log('extraInfo:', listing.extraInfo);
+                  // Extract public facts total sqft from extraInfo
+                  const publicSqft = listing.extraInfo?.[0]?.value?.public_facts?.total_sqft;
                   const listingSqft = typeof listing.sqft === 'number' ? listing.sqft : parseFloat(listing.sqft);
                   const publicSqftValue = publicSqft ? parseFloat(publicSqft) : null;
                   const isMismatch = publicSqftValue !== null && publicSqftValue !== listingSqft;
@@ -234,8 +236,8 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                 </td>
                 {selectedListings.map(listing => (
                   <td key={listing.id}>
-                    {listing.extraInfo?.[0].value?.heating?.energy_source}{' '}
-                    {listing.extraInfo?.[0].value?.heating?.delivery_method}
+                    {listing.extraInfo?.[0]?.value?.heating?.energy_source}{' '}
+                    {listing.extraInfo?.[0]?.value?.heating?.delivery_method}
                   </td>
                 ))}
               </tr>
@@ -246,8 +248,8 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                 </td>
                 {selectedListings.map(listing => (
                   <td key={listing.id}>
-                    {listing.extraInfo?.[0].value?.cooling?.energy_source}{' '}
-                    {listing.extraInfo?.[0].value?.cooling?.delivery_method}
+                    {listing.extraInfo?.[0]?.value?.cooling?.energy_source}{' '}
+                    {listing.extraInfo?.[0]?.value?.cooling?.delivery_method}
                   </td>
                 ))}
               </tr>
@@ -257,7 +259,7 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                   Sewage
                 </td>
                 {selectedListings.map(listing => (
-                  <td key={listing.id}>{listing.extraInfo?.[0].value?.sewage?.type}</td>
+                  <td key={listing.id}>{listing.extraInfo?.[0]?.value?.sewage?.type}</td>
                 ))}
               </tr>
               <tr>
@@ -266,7 +268,7 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                   Water
                 </td>
                 {selectedListings.map(listing => (
-                  <td key={listing.id}>{listing.extraInfo?.[0].value?.water?.type}</td>
+                  <td key={listing.id}>{listing.extraInfo?.[0]?.value?.water?.type}</td>
                 ))}
               </tr>
               <tr>
@@ -275,7 +277,7 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                   Stove
                 </td>
                 {selectedListings.map(listing => (
-                  <td key={listing.id}>{listing.extraInfo?.[0].value?.stove?.energy_source}</td>
+                  <td key={listing.id}>{listing.extraInfo?.[0]?.value?.stove?.energy_source}</td>
                 ))}
               </tr>
               {/*
