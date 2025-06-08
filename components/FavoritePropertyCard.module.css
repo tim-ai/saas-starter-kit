@@ -48,9 +48,10 @@
 }
 
 .checkboxContainer {
+  @apply bg-gray-50;
   position: relative;
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 
 }
 
