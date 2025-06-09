@@ -82,7 +82,7 @@ export default function FavoritePropertyCard({
       }}
     >
 
-      <a href={listing.url} target="_blank" rel="noopener noreferrer">
+      <a href={`/nitpick?address=${encodeURIComponent(listing.address)}`} target="_blank" rel="noopener noreferrer">
         <img
           src={listing.image}
           alt={listing.address}
