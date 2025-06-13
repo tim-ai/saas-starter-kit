@@ -44,6 +44,11 @@ const iconMapping = {
   "Stove": <FaUtensils style={{ marginRight: '0.5em', color: 'gray', fontSize: '1.3em', display: 'inline', verticalAlign: 'middle' }} />
 };
 
+function moneyStringToFloat(moneyString) {
+  const cleanedString = moneyString.replace(/[^0-9.-]/g, '');
+  return parseFloat(cleanedString);
+}
+
 export default function ComparePage({ nitpicks: serverNitpicks }) {
   const { data: session } = useSession();
   const userId = session?.user?.id || null;
@@ -168,7 +173,6 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                   Public Facts
                 </td>
                 {selectedListings.map(listing => {
-                  console.log('extraInfo:', listing.extraInfo);
                   // Extract public facts total sqft from extraInfo
                   const publicSqft = listing.extraInfo?.[0]?.value?.public_facts?.total_sqft;
                   const listingSqft = typeof listing.sqft === 'number' ? listing.sqft : parseFloat(listing.sqft);
@@ -192,6 +196,21 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                 {selectedListings.map(listing => (
                   <td key={listing.id}>{listing.year_built}</td>
                 ))}
+              </tr>
+              <tr>
+                <td>
+                  {iconMapping["Price Per Sqft"]} 
+                  Price Per Sqft
+                </td>
+                {selectedListings.map(listing => {
+                  const publicSqft = listing.extraInfo?.[0]?.value?.public_facts?.total_sqft;
+                  const listingSqft = typeof listing.sqft === 'number' ? listing.sqft : parseFloat(listing.sqft);
+                  const publicSqftValue = publicSqft ? parseFloat(publicSqft) : null;
+
+                  return (
+                    <td key={listing.id}>${(listing.price / listingSqft).toFixed(2)} (${publicSqftValue ? (listing.price / publicSqftValue).toFixed(2) : 'N/A'})</td>
+                  );
+                })}
               </tr>
               <tr>
                 <td>
