@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
-import { GoogleMap, LoadScript, Autocomplete, Marker } from '@react-google-maps/api';
+import { GoogleMap, Autocomplete, Marker } from '@react-google-maps/api';
 import HouseListingCard from '../../components/HouseListingCard'; // <-- Updated import
 import NitpickList from '../../components/NitpickList';
 import styles from './index.module.css';
@@ -205,101 +205,93 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
   return (
     <div className={styles.container2col}>
       <div className="max-w-5xl w-full mx-auto bg-white shadow-xl rounded-lg my-8 font-sans relative">
-        <LoadScript
-          googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
-          libraries={libraries}
-          onError={() =>
-            setMapError('Failed to load Google Maps. Please check your API key.')
-          }
-        >
-          <div name="searchHeader">
-            <form onSubmit={handleSubmit} className={styles.searchFormRow}>
-              <Autocomplete
-                className={styles.searchHeader}
-                onLoad={(autocomplete) => setAutocomplete(autocomplete)}
-                onPlaceChanged={() => {
-                  if (autocomplete) {
-                    const place = autocomplete.getPlace();
-                    if (place.formatted_address) {
-                      setAddress(place.formatted_address);
-                    }
-                    if (place.geometry?.location) {
-                      const lat = place.geometry.location.lat();
-                      const lng = place.geometry.location.lng();
-                      setMapCenter({ lat, lng });
-                      setMarkerPosition({ lat, lng });
-                      if (mapInstance) {
-                        mapInstance.panTo({ lat, lng });
-                      }
+        <div name="searchHeader">
+          <form onSubmit={handleSubmit} className={styles.searchFormRow}>
+            <Autocomplete
+              className={styles.searchHeader}
+              onLoad={(autocomplete) => setAutocomplete(autocomplete)}
+              onPlaceChanged={() => {
+                if (autocomplete) {
+                  const place = autocomplete.getPlace();
+                  if (place.formatted_address) {
+                    setAddress(place.formatted_address);
+                  }
+                  if (place.geometry?.location) {
+                    const lat = place.geometry.location.lat();
+                    const lng = place.geometry.location.lng();
+                    setMapCenter({ lat, lng });
+                    setMarkerPosition({ lat, lng });
+                    if (mapInstance) {
+                      mapInstance.panTo({ lat, lng });
                     }
                   }
-                }}
-              >
-                <input
-                  placeholder="Enter US Address"
-                  className={styles.searchInput}
-                  value={address}
-                  style={{ width: '100%' }}
-                  onChange={(e) => setAddress(e.target.value)}
-                />
-              </Autocomplete>
-              <button 
-                type="submit" 
-                className={styles.searchButton}
-                disabled={loading}
-                ref={submitButtonRef}
-              >
-                {loading ? 'Processing...' : 'Nitpick It!'}
-              </button>
-            </form>
-          </div>
+                }
+              }}
+            >
+              <input
+                placeholder="Enter US Address"
+                className={styles.searchInput}
+                value={address}
+                style={{ width: '100%' }}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </Autocomplete>
+            <button 
+              type="submit" 
+              className={styles.searchButton}
+              disabled={loading}
+              ref={submitButtonRef}
+            >
+              {loading ? 'Processing...' : 'Nitpick It!'}
+            </button>
+          </form>
+        </div>
 
-          {/*
-            If propertyMeta has been updated with actual property data, display HouseListingCard.
-            Otherwise, keep displaying the map container.
-          */}
-          {propertyMeta ? (
-            <HouseListingCard 
-              listingData={propertyMeta} 
-              sections={sections} 
-              setSections={setSections}
-              currentUser={userId} 
-              onFavorite={async (listing) => {
-                if (!userId) {
-                  console.error('User not logged in!');
-                  return;
-                }
-                try {
-                  await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
-                } catch (error) {
-                  console.error(error);
-                }
-              }} 
-            />
-          ) : (
-            <div className={styles.mapContainer}>
-              <div className={styles.mapWrapper}>
-                <GoogleMap
-                  mapContainerStyle={mapContainerStyle}
-                  zoom={14}
-                  center={mapCenter}
-                  options={{ disableDefaultUI: true }}
-                  onLoad={(map) => setMapInstance(map)}
-                >
-                  {markerPosition && (
-                    <Marker
-                      position={markerPosition}
-                      icon={{
-                        url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                        scaledSize: new window.google.maps.Size(40, 40),
-                      }}
-                    />
-                  )}
-                </GoogleMap>
-              </div>
+        {/*
+          If propertyMeta has been updated with actual property data, display HouseListingCard.
+          Otherwise, keep displaying the map container.
+        */}
+        {propertyMeta ? (
+          <HouseListingCard 
+            listingData={propertyMeta} 
+            sections={sections} 
+            setSections={setSections}
+            currentUser={userId} 
+            onFavorite={async (listing) => {
+              if (!userId) {
+                console.error('User not logged in!');
+                return;
+              }
+              try {
+                await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
+              } catch (error) {
+                console.error(error);
+              }
+            }} 
+          />
+        ) : (
+          <div className={styles.mapContainer}>
+            <div className={styles.mapWrapper}>
+              <GoogleMap
+                mapContainerStyle={mapContainerStyle}
+                zoom={14}
+                center={mapCenter}
+                options={{ disableDefaultUI: true }}
+                onLoad={(map) => setMapInstance(map)}
+              >
+                {markerPosition && (
+                  <Marker
+                    position={markerPosition}
+                    icon={{
+                      url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                      scaledSize: new window.google.maps.Size(40, 40),
+                    }}
+                  />
+                )}
+              </GoogleMap>
             </div>
-          )}
-        </LoadScript>
+          </div>
+        )}
 
         {!mapError && !propertyMeta && (
           <div className={styles.infoMessage}></div>

@@ -395,7 +395,7 @@
 
 /* Advanced search components */
 .searchRow {
-  @apply flex items-center justify-between mb-4;
+  @apply flex items-center justify-between mb-4 text-xs;
   display: flex;
   width: 100%;
 

@@ -325,9 +325,9 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
   // No-op functions for issue manipulation – update these as needed to integrate with external state management.
 
   const getStatusColor = (status) => {
-    if (status === 'Active' || (status && status.startsWith('FOR SALE'))) return 'bg-green-100 text-green-700';
-    if (status === 'Pending' || status === 'CONTINGENT' || status === 'ACTIVE WITH CONTRACT') return 'bg-yellow-100 text-yellow-700';
-    if (status === 'Sold' || status === 'Off Market') return 'bg-red-100 text-red-700';
+    if (status.toUpperCase() === 'ACTIVE' || (status && status.toUpperCase().startsWith('FOR SALE'))) return 'bg-green-100 text-green-700';
+    if (status === 'PENDING' || status === 'CONTINGENT' || status === 'ACTIVE WITH CONTRACT') return 'bg-yellow-100 text-yellow-700';
+    if (status === 'SOLD' || status === 'OFF MARKET') return 'bg-red-100 text-red-700';
     return 'bg-gray-100 text-gray-700';
   };
 
@@ -390,7 +390,7 @@ export default function HouseListingCard({ listingData, currentUser, onFavorite,
           </span>
 
         </div>
-        {listingData.status !== 'Active' && !listingData.status?.startsWith('FOR SALE') && (
+        {listingData.status?.toUpperCase() !== 'ACTIVE' && !listingData.status?.toUpperCase().startsWith('FOR SALE') && (
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-md text-sm flex items-center">
             <InfoIcon size={20} className="mr-2 flex-shrink-0"/>
             This listing is currently not available for offers.

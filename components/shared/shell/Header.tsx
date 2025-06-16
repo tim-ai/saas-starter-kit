@@ -108,6 +108,9 @@ const Header = () => {
             <Link href="/nitpick/search" className={styles.navItem}>
               {t('Search')}
             </Link>
+            <Link href="/nitpick/geosearch" className={styles.navItem}>
+              {t('Distance Search')}
+            </Link>
             <Link href="/nitpick" className={styles.navItem}>
               {t('Nitpick')}
             </Link>

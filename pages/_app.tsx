@@ -1,3 +1,4 @@
+import { LoadScript, Libraries } from '@react-google-maps/api';
 import app from '@/lib/app';
 import { SessionProvider } from 'next-auth/react';
 import { appWithTranslation } from 'next-i18next';
@@ -6,7 +7,6 @@ import { Toaster } from 'react-hot-toast';
 import colors from 'tailwindcss/colors';
 import type { AppPropsWithLayout } from 'types';
 import mixpanel from 'mixpanel-browser';
-
 import '@boxyhq/react-ui/dist/react-ui.css';
 import '../styles/globals.css';
 import { useEffect } from 'react';
@@ -14,6 +14,8 @@ import env from '@/lib/env';
 import { Theme, applyTheme } from '@/lib/theme';
 import { Themer } from '@boxyhq/react-ui/shared';
 import { AccountLayout } from '@/components/layouts';
+
+const libraries: Libraries = ['places']; // typed as Libraries
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const { session, ...props } = pageProps;
@@ -60,7 +62,15 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             '--primary-color-950': colors.blue['950'],
           }}
         >
-          {getLayout(<Component {...props} />)}
+          <LoadScript
+            googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!}
+            libraries={libraries}
+            onError={(error) =>
+              console.error('Failed to load Google Maps API', error)
+            }
+          >
+            {getLayout(<Component {...props} />)}
+          </LoadScript>
         </Themer>
       </SessionProvider>
     </>

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import { GoogleMap, Autocomplete } from '@react-google-maps/api';
 import { FaSpinner, FaCog } from 'react-icons/fa';
 import axios from 'axios';
 import styles from './index.module.css';
@@ -12,8 +12,7 @@ import { toggleFavorite } from '@/lib/favorite';
 import { getCookie } from 'cookies-next';
 import { useRouter } from 'next/router';
 
-
-// Define libraries outside the component
+// Define libraries - no need to load here as _app.tsx handles it.
 const libraries = ['places'];
 
 export default function Map3D({ nitpicks: serverNitpicks }) {
@@ -81,7 +80,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     if (hoveredListingId) {
       const element = document.getElementById(`listing-${hoveredListingId}`);
       if (element) {
-        //element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        // element.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }
     }
   }, [hoveredListingId]);
@@ -107,7 +106,6 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
         setLoading(false);
         return;
       }
-      // check if a listing belongs to the nitpicks and set listing.isFavorite accordingly
       const listings = response.data.map((listing) => ({
         ...listing,
         isFavorite: nitpicks.some((nitpick) => nitpick.id === listing.id),
@@ -146,19 +144,17 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
             setHoveredListingId={setHoveredListingId}
             hoverTimeout={hoverTimeout}
             setHoverTimeout={setHoverTimeout}
-            onFavorite={
-              async (listing) => {
-                if (!userId) {
-                  console.error('User not logged in!');
-                  return;
-                }
-                try {
-                  await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
-                } catch (error) {
-                  console.error(error);
-                }
+            onFavorite={async (listing) => {
+              if (!userId) {
+                console.error('User not logged in!');
+                return;
               }
-            }
+              try {
+                await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
+              } catch (error) {
+                console.error(error);
+              }
+            }}
             linkType="nitpick"
           />
         )),
@@ -187,11 +183,11 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
                 {loading ? 'Processing...' : 'Search'}
               </button>
               <FaCog
-  className={styles.advancedToggle}
-  onClick={() => setShowAdvanced(!showAdvanced)}
-  title="Advanced search settings"
-  style={{ cursor: 'pointer' }}
-/>
+                className={styles.advancedToggle}
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                title="Advanced search settings"
+                style={{ cursor: 'pointer' }}
+              />
             </div>
 
             {showAdvanced && (
@@ -241,25 +237,20 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
           </form>
         </header>
 
-        <LoadScript
-          googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
-          libraries={libraries}
-          onError={() => setMapError('Failed to load Google Maps. Please check your API key.')}
-        >
-          <div className={styles.mapContainer} style={{ flex: '100%', margin: '0 auto', top: '0', zIndex: 10 }}>
-            {!isMapLoaded && <div className={styles.mapLoading}>Loading map...</div>}
-            <GoogleMap
-              mapContainerStyle={mapContainerStyle}
-              zoom={zoom}
-              center={mapCenter}
-              options={{ disableDefaultUI: true }}
-              onLoad={() => setIsMapLoaded(true)}
-              onError={handleMapError}
-            >
-              {markers}
-            </GoogleMap>
-          </div>
-        </LoadScript>
+        {/* No local <LoadScript> wrapper – assume the API is loaded via _app.tsx */}
+        <div className={styles.mapContainer} style={{ flex: '100%', margin: '0 auto', top: '0', zIndex: 10 }}>
+          {!isMapLoaded && <div className={styles.mapLoading}>Loading map...</div>}
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            zoom={zoom}
+            center={mapCenter}
+            options={{ disableDefaultUI: true }}
+            onLoad={() => setIsMapLoaded(true)}
+            onError={handleMapError}
+          >
+            {markers}
+          </GoogleMap>
+        </div>
 
         {mapError && (
           <div className={styles.errorBanner}>
@@ -296,13 +287,11 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
               setNitpicks((prevNitpicks) =>
                 prevNitpicks.filter((nitpick) => nitpick.id !== nitpickId)
               );
-
             }}
           />
         </div>
       )}
 
-      {/* Spinner overlay to indicate processing */}
       {loading && (
         <div className={styles.spinnerOverlay}>
           <FaSpinner className={styles.spinner} />
