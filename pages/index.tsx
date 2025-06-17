@@ -130,7 +130,7 @@ const HomePage: NextPageWithLayout = () => {
                                 <input
                                     type="text"
                                     placeholder="Enter an address, neighborhood, city, or ZIP code"
-                                    className="w-full max-w-xl p-4 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-400 mb-4 md:mb-0 md:mr-2 shadow-lg"
+                                    className="w-full max-w-xl p-4 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-400 mb-4 md:mb-0 md:mr-2 shadow-lg bg-gray-50"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />

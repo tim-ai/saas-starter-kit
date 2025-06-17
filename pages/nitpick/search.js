@@ -12,9 +12,6 @@ import { toggleFavorite } from '@/lib/favorite';
 import { getCookie } from 'cookies-next';
 import { useRouter } from 'next/router';
 
-// Define libraries - no need to load here as _app.tsx handles it.
-const libraries = ['places'];
-
 export default function Map3D({ nitpicks: serverNitpicks }) {
   const router = useRouter();
   const { data: session } = useSession();

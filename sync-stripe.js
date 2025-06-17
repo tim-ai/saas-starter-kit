@@ -150,7 +150,7 @@ function seedFixedTiers(prisma) {
       maxStorage: 1024,
       maxApiCalls: 1000,
       price: 0,
-      limits: JSON.stringify({ views: 5, analysis: 1 }),
+      limits: JSON.stringify({ views: 1000, analysis: 1 }),
     },
     {
       id: 'pro-tier',
@@ -159,7 +159,7 @@ function seedFixedTiers(prisma) {
       features: ['5 Teams', '1000 Views Per Week', '200MB Storage', '100 Customized AI Analysis Per Week'],
       maxTeams: 5,
       maxStorage: 10240,
-      maxApiCalls: 10000,
+      maxApiCalls: 1000,
       price: 2900,
       limits: JSON.stringify({ views: 1000, analysis: 100 }),
     },

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { GoogleMap, useLoadScript, Autocomplete } from '@react-google-maps/api';
+import { GoogleMap, Autocomplete, Circle } from '@react-google-maps/api';
 import { FaSpinner, FaCog } from 'react-icons/fa';
 import axios from 'axios';
 import styles from './index.module.css';
@@ -12,16 +12,13 @@ import { toggleFavorite } from '@/lib/favorite';
 import { getCookie } from 'cookies-next';
 import { useRouter } from 'next/router';
 
-
-// Define libraries outside the component
-const libraries = ['places'];
-
 export default function Map3D({ nitpicks: serverNitpicks }) {
   const router = useRouter();
   const { data: session } = useSession();
   const userId = session?.user?.id || null;
   const { keywords: queryKeywords } = router.query;
 
+  // State definitions
   const [searchTerm, setSearchTerm] = useState('');
   const [listings, setListings] = useState([]);
   const [mapError, setMapError] = useState(null);
@@ -33,13 +30,12 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const [hoveredListingId, setHoveredListingId] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const [radius, setRadius] = useState('');
-  const submitButtonRef = useRef(null);
   const [address, setAddress] = useState('');
   const [autocomplete, setAutocomplete] = useState(null);
-
-
+  const circleRef = useRef(null);
+  const submitButtonRef = useRef(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const currentTeamId = getCookie('currentTeamId');
 
@@ -51,12 +47,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   };
 
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY,
-    libraries, // ['places']
-  });
-
-  // Always call your hooks unconditionally
+  // Update search term when query changes.
   useEffect(() => {
     if (queryKeywords) {
       setSearchTerm(queryKeywords);
@@ -68,8 +59,9 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     }
   }, [queryKeywords]);
 
+  // Set map center using geolocation when component mounts.
   useEffect(() => {
-    if (isLoaded && navigator.geolocation) {
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setMapCenter({
@@ -84,11 +76,12 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     }
   }, []);
 
+  // Scroll to hovered listing if needed.
   useEffect(() => {
     if (hoveredListingId) {
       const element = document.getElementById(`listing-${hoveredListingId}`);
       if (element) {
-        //element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        // element.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }
     }
   }, [hoveredListingId]);
@@ -107,10 +100,8 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
       setLoading(false);
       return;
     }
-    
-    // Validate: radius search requires a starting address
+
     if (!address.trim()) return;
-    console.log('Search 2 with address:', address, " radius:", radius);
 
     let place;
     if (autocomplete) {
@@ -152,41 +143,41 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
       lng = place.geometry.location.lng();
       setMapCenter({ lat, lng });
       setMarkerPosition({ lat, lng });
-
     }
-    
+
     const searchParams = {
       lat: lat,
       lng: lng,
       radius: radius,
     };
-    try {
-    const response = await axios.post(`/api/geosearch`, searchParams);
-    if (response.data.length === 0) {
-      setMapError('No listings found for the specified location.');
-      setLoading(false);
-      return;
-    }
-    // check if a listing belongs to the nitpicks and set listing.isFavorite accordingly
-    const listings = response.data.map((listing) => ({
-      ...listing,
-      isFavorite: nitpicks.some((nitpick) => nitpick.id === listing.id),
-    }));
 
-    setListings(listings);
-    const first = listings[0];
-    setMapCenter({ lat: first.lat, lng: first.lng });
-    setZoom(12);
-    setMarkerPosition({ lat: first.lat, lng: first.lng });
-  } catch (error) {
-    const errorMessage =
-      error.response?.data?.message || error.message || 'An unexpected error occurred.';
-    setMapError(`Error fetching listings: ${errorMessage}`);
-    console.error('Error fetching listings:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const response = await axios.post(`/api/geosearch`, searchParams);
+      if (response.data.length === 0) {
+        setMapError('No listings found for the specified location.');
+        setLoading(false);
+        return;
+      }
+      // Mark listings as favorite if they belong in nitpicks.
+      const listingsData = response.data.map((listing) => ({
+        ...listing,
+        isFavorite: nitpicks.some((nitpick) => nitpick.id === listing.id),
+      }));
+
+      setListings(listingsData);
+      const first = listingsData[0];
+      // setMapCenter({ lat: first.lat, lng: first.lng });
+      setZoom(12);
+      // setMarkerPosition({ lat: first.lat, lng: first.lng });
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || 'An unexpected error occurred.';
+      setMapError(`Error fetching listings: ${errorMessage}`);
+      console.error('Error fetching listings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const markers = useMemo(
     () =>
@@ -206,164 +197,235 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
             setHoveredListingId={setHoveredListingId}
             hoverTimeout={hoverTimeout}
             setHoverTimeout={setHoverTimeout}
-            onFavorite={
-              async (listing) => {
-                if (!userId) {
-                  console.error('User not logged in!');
-                  return;
-                }
-                try {
-                  await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
-                } catch (error) {
-                  console.error(error);
-                }
+            onFavorite={async (listing) => {
+              if (!userId) {
+                console.error('User not logged in!');
+                return;
               }
-            }
+              try {
+                await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
+              } catch (error) {
+                console.error(error);
+              }
+            }}
             linkType="nitpick"
           />
         )),
     [listings, hoveredListingId, hoverTimeout]
   );
 
-  // Now, inside the returned JSX, conditionally render your fallback UI.
   return (
     <div className={styles.container2col}>
-      {(!isLoaded || loadError) ? (
-        <div>
-          {loadError ? "Error loading map" : "Loading Map..."}
-        </div>
-      ) : (
-        <>
-          {console.log("isLoaded:", isLoaded, "loadError:", loadError)}
-          <div className={styles.searchContainer}>
-            <header className={styles.searchHeader}>
-              <form onSubmit={handleSearch} className={styles.searchForm}>
-                <div className={styles.searchRow}>
-                  <Autocomplete
-                    className={styles.searchHeader}
-                    onLoad={(autocomplete) => setAutocomplete(autocomplete)}
-                    onPlaceChanged={() => {
-                      if (autocomplete && typeof window.google !== 'undefined') {
-                        const place = autocomplete.getPlace();
-                        if (place.formatted_address) {
-                          setAddress(place.formatted_address);
-                        }
-                        if (place.geometry?.location) {
-                          const lat = place.geometry.location.lat();
-                          const lng = place.geometry.location.lng();
-                          setMapCenter({ lat, lng });
-                          setMarkerPosition({ lat, lng });
-                          // If you have a mapInstance, use it
-                        }
-                      }
-                    }}
-                  >
-                    <input
-                      placeholder="Enter US Address"
-                      className={styles.searchInput}
-                      value={address}
-                      style={{ width: '100%' }}
-                      onChange={(e) => {
-                        setAddress(e.target.value);
-                      }}
-                    />
-                  </Autocomplete>
-                  <button
-                    type="submit"
-                    className={loading ? `${styles.searchButton} ${styles.loading}` : styles.searchButton}
-                    disabled={loading}
-                    ref={submitButtonRef}
-                  >
-                    {loading ? 'Processing...' : 'Search'}
-                  </button>
-
-                </div>
-                <div className={styles.searchRow}>
-                      <label>Radius (miles)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={radius}
-                        onChange={(e) => setRadius(e.target.value)}
-                        placeholder="Set address first"
-                      />
-                </div>
-
-              </form>
-            </header>
-
-            {/* Render the map container */}
-            <div className={styles.mapContainer} style={{ flex: '100%', margin: '0 auto', top: '0', zIndex: 10 }}>
-              {!isMapLoaded && <div className={styles.mapLoading}>Loading map...</div>}
-              <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                zoom={zoom}
-                center={mapCenter}
-                options={{ disableDefaultUI: true }}
-                onLoad={() => setIsMapLoaded(true)}
-                onError={handleMapError}
-              >
-                {markers}
-              </GoogleMap>
-            </div>
-
-            {mapError && (
-              <div className={styles.errorBanner}>{mapError}</div>
-            )}
-
-            {/* Listings grid */}
-            <ListingsGrid
-              listings={listings}
-              hoveredListingId={hoveredListingId}
-              setHoveredListingId={setHoveredListingId}
-              onFavorite={async (listing) => {
-                if (!userId) {
-                  console.error('User not logged in!');
-                  return;
-                }
-                try {
-                  await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
-                } catch (error) {
-                  console.error(error);
+      {/* Here we assume the API is loaded via _app.tsx; use your state isMapLoaded for local UI */}
+      <div className={styles.searchContainer}>
+        <form onSubmit={handleSearch} className={styles.searchForm}>
+            <Autocomplete
+              onLoad={(autocomplete) => setAutocomplete(autocomplete)}
+              onPlaceChanged={() => {
+                if (autocomplete && typeof window.google !== 'undefined') {
+                  const place = autocomplete.getPlace();
+                  if (place.formatted_address) {
+                    setAddress(place.formatted_address);
+                  }
+                  if (place.geometry?.location) {
+                    const lat = place.geometry.location.lat();
+                    const lng = place.geometry.location.lng();
+                    setMapCenter({ lat, lng });
+                    setMarkerPosition({ lat, lng });
+                  }
                 }
               }}
-            />
+            >
+                        <div className={styles.searchRow}>
+
+              <input
+                placeholder="Enter US Address"
+                className={styles.searchInput}
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            <button
+              type="submit"
+              className={loading ? `${styles.searchButton} ${styles.loading}` : styles.searchButton}
+              disabled={loading}
+              ref={submitButtonRef}
+            >
+              {loading ? <FaSpinner className={styles.spinnerIcon} /> : 'Search'}
+            </button>
           </div>
+                      </Autocomplete>
 
-          {nitpicks.length > 0 && (
-            <div className={styles.savedSection}>
-              <h2 className={styles.savedTitle}>Your Favorite</h2>
-              <NitpickList
-                nitpicks={nitpicks}
-                hoveredListingId={hoveredListingId}
-                setHoveredListingId={setHoveredListingId}
-                onDeleteFavorite={(nitpickId) => {
-                  setNitpicks((prevNitpicks) =>
-                    prevNitpicks.filter((nitpick) => nitpick.id !== nitpickId)
-                  );
-
-                }}
+          
+          {address && (
+            <div className={styles.searchRow}>
+              <div className={styles.radiusControl}>
+                <input
+                  type="number"
+                  min="0"
+                  value={radius}
+                  onChange={(e) => setRadius(e.target.value)}
+                  placeholder="Radius (miles)"
+                  className={styles.radiusInput}
+                />
+              </div>
+              <FaCog
+                className={styles.advancedToggle}
+                onClick={() => setShowAdvanced((prev) => !prev)}
+                title="Advanced settings"
               />
             </div>
           )}
-
-          {/* Spinner overlay to indicate processing */}
-          {loading && (
-            <div className={styles.spinnerOverlay}>
-              <FaSpinner className={styles.spinner} />
+          
+          {showAdvanced && (
+            <div className={styles.advancedSettings}>
+              <div className={styles.filterGroup}>
+                <label>Bedrooms</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={''}
+                  onChange={() => {}}
+                  placeholder="Any"
+                />
+              </div>
+              <div className={styles.filterGroup}>
+                <label>Bathrooms</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={''}
+                  onChange={() => {}}
+                  placeholder="Any"
+                />
+              </div>
+              <div className={styles.filterGroup}>
+                <label>Min Price</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={''}
+                  onChange={() => {}}
+                  placeholder="$ Min"
+                />
+              </div>
+              <div className={styles.filterGroup}>
+                <label>Max Price</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={''}
+                  onChange={() => {}}
+                  placeholder="$ Max"
+                />
+              </div>
             </div>
           )}
-        </>
+        </form>
+
+        {/* Map container */}
+        <div className={styles.mapContainer}>
+          {!isMapLoaded && <div className={styles.mapLoading}>Loading map...</div>}
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            zoom={zoom}
+            center={mapCenter}
+            options={{
+              disableDefaultUI: true,
+              gestureHandling: 'greedy'
+            }}
+            onLoad={() => setIsMapLoaded(true)}
+            onError={handleMapError}
+          >
+            {markers}
+            {markerPosition && (
+              <Circle
+                onLoad={(circle) => {
+                  circleRef.current = circle;
+                }}
+                center={markerPosition}
+                radius={radius ? parseFloat(radius) * 1609.34 : 0}
+                options={{
+                  strokeColor: "#4285F4",
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2,
+                  fillColor: "#4285F4",
+                  fillOpacity: 0.2,
+                  draggable: true,
+                  editable: true,
+                  zIndex: 1,
+                }}
+                onDragEnd={(e) => {
+                  const newPosition = {
+                    lat: e.latLng.lat(),
+                    lng: e.latLng.lng(),
+                  };
+                  setMarkerPosition(newPosition);
+                  setMapCenter(newPosition);
+                }}
+                onRadiusChanged={() => {
+                  if (circleRef.current) {
+                    const newRadius = circleRef.current.getRadius();
+                    const newRadiusMiles = newRadius / 1609.34;
+                    setRadius(newRadiusMiles.toFixed(1));
+                  }
+                }}
+              />
+            )}
+          </GoogleMap>
+        </div>
+
+        {mapError && (
+          <div className={styles.errorBanner}>
+            {mapError}
+          </div>
+        )}
+
+        <ListingsGrid
+          listings={listings}
+          hoveredListingId={hoveredListingId}
+          setHoveredListingId={setHoveredListingId}
+          onFavorite={async (listing) => {
+            if (!userId) {
+              console.error('User not logged in!');
+              return;
+            }
+            try {
+              await toggleFavorite(listing, nitpicks, setNitpicks, userId, currentTeamId);
+            } catch (error) {
+              console.error(error);
+            }
+          }}
+        />
+      </div>
+
+      {nitpicks.length > 0 && (
+        <div className={styles.savedSection}>
+          <h2 className={styles.savedTitle}>Your Favorite</h2>
+          <NitpickList
+            nitpicks={nitpicks}
+            hoveredListingId={hoveredListingId}
+            setHoveredListingId={setHoveredListingId}
+            onDeleteFavorite={(nitpickId) => {
+              setNitpicks((prevNitpicks) =>
+                prevNitpicks.filter((nitpick) => nitpick.id !== nitpickId)
+              );
+            }}
+          />
+        </div>
+      )}
+
+      {loading && (
+        <div className={styles.spinnerOverlay}>
+          <FaSpinner className={styles.spinner} />
+        </div>
       )}
     </div>
   );
 }
 
-// Server-side fetching and transformation of nitpicks records.
 export async function getServerSideProps(context) {
   const protocol = context.req.headers['x-forwarded-proto'] || 'http';
   const host = context.req.headers.host;
-
   const historyResponse = await fetch(`${protocol}://${host}/api/history`, {
     method: 'POST',
     headers: {
@@ -384,8 +446,7 @@ export async function getServerSideProps(context) {
   return {
     props: {
       ...(locale ? await serverSideTranslations(locale, ['common']) : {}),
-
-      nitpicks
+      nitpicks,
     },
   };
 }

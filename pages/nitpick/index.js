@@ -11,7 +11,6 @@ import { useSession } from 'next-auth/react';
 import { getCookie } from 'cookies-next';
 
 
-const libraries = ['places'];
 const mapContainerStyle = {
   width: '100%',
   height: '500px',
