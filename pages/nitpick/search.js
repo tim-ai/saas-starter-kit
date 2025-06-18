@@ -182,12 +182,12 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
               >
                 {loading ? 'Processing...' : 'Search'}
               </button>
-              <FaCog
+              {/* <FaCog
                 className={styles.advancedToggle}
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 title="Advanced search settings"
                 style={{ cursor: 'pointer' }}
-              />
+              /> */}
             </div>
 
             {showAdvanced && (
