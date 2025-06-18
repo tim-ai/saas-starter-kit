@@ -203,7 +203,10 @@ export default function NitPicker({ nitpicks: serverNitpicks }) {
 
   return (
     <div className={styles.container2col}>
-      <div className="max-w-5xl w-full mx-auto bg-white shadow-xl rounded-lg my-8 font-sans relative">
+      <div className={styles.searchContainer}>
+         <div className={styles.searchHeader}>
+          <h1 className={styles.searchTitle}>Nitpick a listing</h1>
+        </div>
         <div name="searchHeader">
           <form onSubmit={handleSubmit} className={styles.searchFormRow}>
             <Autocomplete

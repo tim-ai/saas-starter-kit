@@ -161,6 +161,9 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   return (
     <div className={styles.container2col}>
       <div className={styles.searchContainer}>
+         <div className={styles.searchHeader}>
+          <h1 className={styles.searchTitle}>Search listings by town name or keywords</h1>
+        </div>
         <header className={styles.searchHeader}>
           <form onSubmit={handleSearch} className={styles.searchForm}>
             <div className={styles.searchRow}>

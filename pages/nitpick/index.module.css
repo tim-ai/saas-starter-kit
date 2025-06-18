@@ -553,3 +553,17 @@
 .mapContainer:hover {
   box-shadow: 0 12px 32px rgba(0,0,0,0.18);
 }
+/* Modern, sleek title styling */
+.searchTitle {
+  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  font-weight: 300;
+  font-size: 1.4rem;
+  color: #2d3748;
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+

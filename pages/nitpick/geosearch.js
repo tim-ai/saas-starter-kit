@@ -221,6 +221,9 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
     <div className={styles.container2col}>
 
       <div className={styles.searchContainer}>
+        <div className={styles.searchHeader}>
+          <h1 className={styles.searchTitle}>Find listings within a radius of any address</h1>
+        </div>
         <form onSubmit={handleSearch} className={styles.searchForm}>
           <Autocomplete
             onLoad={(autocomplete) => setAutocomplete(autocomplete)}

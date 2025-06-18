@@ -100,7 +100,9 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
   return (
     <div className={styles.favoritesContainer}>
       <div className={styles.headerRow}>
-        <h1>Your Favorite Listings</h1>
+         <div className={styles.searchHeader}>
+          <h1 className={styles.searchTitle}>Compare your favorite listings</h1>
+        </div>
         {!showComparison && selectedItems.length > 0 && (
           <button
             className={styles.compareButton}

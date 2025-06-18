@@ -123,3 +123,18 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Modern, sleek title styling */
+.searchTitle {
+  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  font-weight: 300;
+  font-size: 1.4rem;
+  color: #2d3748;
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
