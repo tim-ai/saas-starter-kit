@@ -43,12 +43,12 @@
 }
 
 .searchInput {
-  @apply  p-2 border-2 rounded text-xs transition-colors duration-300 ease-in-out w-full; 
+  @apply  p-2 border-2 rounded text-xs transition-colors duration-300 ease-in-out w-full bg-gray-50; 
   flex: 0 0 80%;
 }
 
 .searchInput:focus {
-  @apply outline-none border-blue-500;
+  @apply outline-none border-blue-500 bg-gray-50;
 }
 
 .searchButton {
