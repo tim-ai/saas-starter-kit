@@ -30,18 +30,22 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const [hoveredListingId, setHoveredListingId] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [radius, setRadius] = useState('');
+  const defaultRadius = "3.5";
+
+  const [radius, setRadius] = useState(defaultRadius);
   const [address, setAddress] = useState('');
   const [autocomplete, setAutocomplete] = useState(null);
+  // New state for radio selection:
+  const [showOption, setShowOption] = useState('showActive');
   const circleRef = useRef(null);
   const submitButtonRef = useRef(null);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+
 
   const currentTeamId = getCookie('currentTeamId');
 
   const mapContainerStyle = {
     width: '100%',
-    height: '600px',
+    height: '700px',
     fontSize: '16px',
     borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
@@ -93,7 +97,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log('Search initiated with address:', address, " radius:", radius);
+    console.log('Search initiated with address:', address, " radius:", radius, " option:", showOption);
 
     if (typeof window.google === 'undefined') {
       setMapError('Google Maps API not loaded');
@@ -145,10 +149,12 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
       setMarkerPosition({ lat, lng });
     }
 
+    // Include status in the search parameters
     const searchParams = {
       lat: lat,
       lng: lng,
       radius: radius,
+      showOption: showOption
     };
 
     try {
@@ -165,10 +171,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
       }));
 
       setListings(listingsData);
-      const first = listingsData[0];
-      // setMapCenter({ lat: first.lat, lng: first.lng });
       setZoom(12);
-      // setMarkerPosition({ lat: first.lat, lng: first.lng });
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || 'An unexpected error occurred.';
@@ -216,113 +219,83 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
 
   return (
     <div className={styles.container2col}>
-      {/* Here we assume the API is loaded via _app.tsx; use your state isMapLoaded for local UI */}
+
       <div className={styles.searchContainer}>
         <form onSubmit={handleSearch} className={styles.searchForm}>
-            <Autocomplete
-              onLoad={(autocomplete) => setAutocomplete(autocomplete)}
-              onPlaceChanged={() => {
-                if (autocomplete && typeof window.google !== 'undefined') {
-                  const place = autocomplete.getPlace();
-                  if (place.formatted_address) {
-                    setAddress(place.formatted_address);
-                  }
-                  if (place.geometry?.location) {
-                    const lat = place.geometry.location.lat();
-                    const lng = place.geometry.location.lng();
-                    setMapCenter({ lat, lng });
-                    setMarkerPosition({ lat, lng });
-                  }
+          <Autocomplete
+            onLoad={(autocomplete) => setAutocomplete(autocomplete)}
+            onPlaceChanged={() => {
+              if (autocomplete && typeof window.google !== 'undefined') {
+                const place = autocomplete.getPlace();
+                if (place.formatted_address) {
+                  setAddress(place.formatted_address);
                 }
-              }}
-            >
-                        <div className={styles.searchRow}>
-
+                if (place.geometry?.location) {
+                  const lat = place.geometry.location.lat();
+                  const lng = place.geometry.location.lng();
+                  setMapCenter({ lat, lng });
+                  setMarkerPosition({ lat, lng });
+                }
+              }
+            }}
+          >
+            <div className={styles.searchRow}>
               <input
                 placeholder="Enter US Address"
                 className={styles.searchInput}
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
               />
-            <button
-              type="submit"
-              className={loading ? `${styles.searchButton} ${styles.loading}` : styles.searchButton}
-              disabled={loading}
-              ref={submitButtonRef}
-            >
-              {loading ? <FaSpinner className={styles.spinnerIcon} /> : 'Search'}
-            </button>
-          </div>
-                      </Autocomplete>
+              <button
+                type="submit"
+                className={loading ? `${styles.searchButton} ${styles.loading}` : styles.searchButton}
+                disabled={loading}
+                ref={submitButtonRef}
+              >
+                {loading ? <FaSpinner className={styles.spinnerIcon} /> : 'Search'}
+              </button>
+            </div>
+          </Autocomplete>
 
-          
           {address && (
             <div className={styles.searchRow}>
               <div className={styles.radiusControl}>
                 <input
                   type="number"
-                  min="0"
+                  min="0.1"
+                  max = "200"
+                  step="0.1"
                   value={radius}
+                  defaultValue={defaultRadius}
                   onChange={(e) => setRadius(e.target.value)}
                   placeholder="Radius (miles)"
                   className={styles.radiusInput}
                 />
               </div>
-              <FaCog
-                className={styles.advancedToggle}
-                onClick={() => setShowAdvanced((prev) => !prev)}
-                title="Advanced settings"
+              <input
+                type="radio"
+                value="showActive"
+                id="showActive"
+                name="option"
+                checked={showOption === 'showActive'}
+                onChange={(e) => setShowOption(e.target.value)}
+                placeholder="Any"
               />
-            </div>
-          )}
-          
-          {showAdvanced && (
-            <div className={styles.advancedSettings}>
-              <div className={styles.filterGroup}>
-                <label>Bedrooms</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={''}
-                  onChange={() => {}}
-                  placeholder="Any"
-                />
-              </div>
-              <div className={styles.filterGroup}>
-                <label>Bathrooms</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={''}
-                  onChange={() => {}}
-                  placeholder="Any"
-                />
-              </div>
-              <div className={styles.filterGroup}>
-                <label>Min Price</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={''}
-                  onChange={() => {}}
-                  placeholder="$ Min"
-                />
-              </div>
-              <div className={styles.filterGroup}>
-                <label>Max Price</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={''}
-                  onChange={() => {}}
-                  placeholder="$ Max"
-                />
-              </div>
+              <label htmlFor="showActive">Show Active</label>
+              <input
+                type="radio"
+                value="showAll"
+                id="showAll"
+                name="option"
+                checked={showOption === 'showAll'}
+                onChange={(e) => setShowOption(e.target.value)}
+                placeholder="Any"
+              />
+              <label htmlFor="showAll">Show All</label>
             </div>
           )}
         </form>
 
-        {/* Map container */}
         <div className={styles.mapContainer}>
           {!isMapLoaded && <div className={styles.mapLoading}>Loading map...</div>}
           <GoogleMap
@@ -350,17 +323,9 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
                   strokeWeight: 2,
                   fillColor: "#4285F4",
                   fillOpacity: 0.2,
-                  draggable: true,
-                  editable: true,
+                  draggable: false, // disable dragging of the whole circle
+                  editable: true,   // still enable the resize handles
                   zIndex: 1,
-                }}
-                onDragEnd={(e) => {
-                  const newPosition = {
-                    lat: e.latLng.lat(),
-                    lng: e.latLng.lng(),
-                  };
-                  setMarkerPosition(newPosition);
-                  setMapCenter(newPosition);
                 }}
                 onRadiusChanged={() => {
                   if (circleRef.current) {
@@ -374,11 +339,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
           </GoogleMap>
         </div>
 
-        {mapError && (
-          <div className={styles.errorBanner}>
-            {mapError}
-          </div>
-        )}
+        {mapError && <div className={styles.errorBanner}>{mapError}</div>}
 
         <ListingsGrid
           listings={listings}

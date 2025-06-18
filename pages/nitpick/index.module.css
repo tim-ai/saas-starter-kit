@@ -300,7 +300,7 @@
 
 /* Map container uses grid */
 .mapContainer {
-  @apply grid w-full mt-1 scroll-smooth  p-4 bg-[#f8fafc] rounded-lg;
+  @apply grid w-full mt-1 scroll-smooth;
   display: grid;
   gap: 1rem;
   grid-template-columns: 1fr;
@@ -400,6 +400,13 @@
 }
 
 /* Advanced search components */
+.advancedOptions {
+  @apply mx-4 mb-1 text-xs w-full;
+  display: flex;
+  text-align: left;
+  justify-content: flex-start;
+}
+
 .searchRow {
   @apply flex items-center gap-2 mb-1 text-xs w-full;
 }
@@ -504,10 +511,9 @@
 
 
 .searchForm {
-  padding: 12px;
   background: white;
 
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .searchButton {

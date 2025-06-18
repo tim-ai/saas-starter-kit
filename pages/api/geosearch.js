@@ -43,7 +43,8 @@ async function handler(req, res) {
   return axios.post(url, {
     lat: queryObj.lat,
     lng: queryObj.lng,
-    radius: queryObj.radius
+    radius: queryObj.radius,
+    option: queryObj.showOption || null
   })
     .then(response => {
       const data = response.data;

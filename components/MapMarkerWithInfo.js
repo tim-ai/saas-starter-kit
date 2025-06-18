@@ -12,7 +12,7 @@ export default function MapMarkerWithInfo({
   linkType = 'listing', // new input flag: "nitpick" or "listing"
 }) {
   const isHovered = String(hoveredListingId) === String(listing.id);
-  const isActive = listing.status.toLowerCase() === 'active' || listing.status.startsWith('FOR SALE');
+  const isActive = listing.status.toLowerCase() === 'active' || listing.status.toUpperCase().startsWith('FOR SALE');
   const markerRef = useRef(null);
   const infoWindowRef = useRef(null);
 
