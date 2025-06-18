@@ -38,7 +38,6 @@ async function handler(req, res) {
   }
   const userId = session?.user.id;
   const teamId = await getCookie('currentTeamId', {req, res});
-  console.error('-------------teamId', teamId);
 
   // Read backend host and port from environment variables
   const aiserverIp = process.env.AISERVER_IP || '127.0.0.1';

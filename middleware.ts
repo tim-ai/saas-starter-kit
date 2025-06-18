@@ -83,14 +83,12 @@ const unAuthenticatedRoutes = [
 
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  console.log('Middleware triggered for path:', pathname);
-  console.log('Request headers:', req.headers);
+  // print pathname and timestamp for debugging
   // Bypass routes that don't require authentication
   if (micromatch.isMatch(pathname, unAuthenticatedRoutes)) {
     return NextResponse.next();
   }
-  console.log('Middleware authing for path:', pathname);
+  console.log(`${new Date().toISOString()} Middleware authenticating for path: ${pathname}`);
 
   const redirectUrl = new URL('/auth/login', req.url);
   redirectUrl.searchParams.set('callbackUrl', encodeURI(req.url));
