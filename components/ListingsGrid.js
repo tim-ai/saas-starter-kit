@@ -1,4 +1,3 @@
-import React from 'react';
 import ActivePropertyCard from './ActivePropertyCard';
 import styles from './ListingsGrid.module.css';
 

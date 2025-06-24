@@ -12,7 +12,7 @@ export default function ActivePropertyCard({ listing, imgHeight, highlighted, on
 
   const teamId = getCookie('currentTeamId');
   const handleInspect = () => {
-    if (router.asPath.endsWith('/search')) {
+    if (router.asPath.endsWith('search')) {
       const urlWithQuery = `${window.location.origin}/nitpick?address=${encodeURIComponent(listing.address)}`;
       window.open(urlWithQuery, '_blank');
     } else {
