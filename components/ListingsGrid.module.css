@@ -1,3 +1,83 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sortingBar {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.sortControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sortLabel {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.sortOptions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sortButton {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #4a5568;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sortButton:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.sortButton.active {
+  background: #3182ce;
+  color: white;
+  border-color: #3182ce;
+}
+
+.orderToggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.orderToggle:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
 .listingsGrid {
   display: grid;
   gap: 16px;
@@ -16,8 +96,21 @@
 
 /* For small screens, further reduce the column size */
 @media (max-width: 600px) {
+  .sortControls {
+    gap: 12px;
+  }
+
+  .sortOptions {
+    gap: 6px;
+  }
+
+  .sortButton {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
   .listingsGrid {
-    grid-template-columns: repeat(auto-fill, minmax(200, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 12px;
     padding: 12px;
   }
@@ -26,10 +119,14 @@
 .listingItem {
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .listingItem:hover {
-  transform: scale(1.02);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Checkbox styles */
@@ -44,7 +141,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #007bff;
+  accent-color: #3182ce;
 }
 
 .selectable {

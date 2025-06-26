@@ -348,6 +348,7 @@ export default function Map3D({ nitpicks: serverNitpicks }) {
           listings={listings}
           hoveredListingId={hoveredListingId}
           setHoveredListingId={setHoveredListingId}
+          userLocation={mapCenter}
           onFavorite={async (listing) => {
             if (!userId) {
               console.error('User not logged in!');

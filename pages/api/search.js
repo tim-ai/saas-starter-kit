@@ -70,7 +70,9 @@ async function handler(req, res) {
           lng: parseFloat(listing._geo?.lng)
         },
         lat: parseFloat(listing._geo?.lat),
-        lng: parseFloat(listing._geo?.lng)
+        lng: parseFloat(listing._geo?.lng),
+        createdAt: listing.createdAt,
+        updatedAt: listing.updatedAt,
       }));
 
       res.status(200).json(listings);
