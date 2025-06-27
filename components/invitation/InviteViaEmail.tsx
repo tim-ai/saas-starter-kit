@@ -64,7 +64,7 @@ const InviteViaEmail = ({ setVisible, team }: InviteViaEmailProps) => {
           name="email"
           onChange={formik.handleChange}
           value={formik.values.email}
-          placeholder="jackson@boxyhq.com"
+          placeholder="someone@nitpickr.net"
           required
           className="text-sm w-1/2"
           type="email"

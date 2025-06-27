@@ -89,7 +89,7 @@ const SSO: NextPageWithLayout<
                 type="email"
                 label="Email"
                 name="email"
-                placeholder="user@boxyhq.com"
+                placeholder="user@nitpickr.net"
                 value={formik.values.email}
                 error={formik.touched.email ? formik.errors.email : undefined}
                 onChange={formik.handleChange}

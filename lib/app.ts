@@ -4,7 +4,7 @@ import env from './env';
 const app = {
   version: packageInfo.version,
   name: 'NITPICKER',
-  logoUrl: '/logo.jpg',
+  logoUrl: 'https://nitpickr.net/logo.jpg',
   url: env.appUrl,
 };
 

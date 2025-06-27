@@ -135,7 +135,7 @@ Execution Time: 0.057 ms
     },
   });
 
-  if (totalTeamOwners <= 1) {
+  if (teamMember.role === 'OWNER' && totalTeamOwners <= 1) {
     throw new ApiError(400, 'A team should have at least one owner.');
   }
 

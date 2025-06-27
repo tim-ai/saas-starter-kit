@@ -34,9 +34,9 @@ export default function ListingsGrid({
           break;
         case 'distance':
           // Only calculate distance if userLocation is provided
-          if (userLocation && a.geo && b.geo) {
-            valueA = calculateDistance(userLocation, a.geo);
-            valueB = calculateDistance(userLocation, b.geo);
+          if (userLocation && a._geo && b._geo) {
+            valueA = calculateDistance(userLocation, a._geo);
+            valueB = calculateDistance(userLocation, b._geo);
           } else {
             // Default to createdAt if distance can't be calculated
             valueA = new Date(a.createdAt);

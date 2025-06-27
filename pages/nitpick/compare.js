@@ -129,7 +129,9 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                 <th>Property</th>
                 {selectedListings.map(listing => (
                   <th key={listing.id}>
-                    <div>{listing.address}</div>
+                    <a href={listing.url} target="_blank" rel="noopener noreferrer">
+                      {listing.address}
+                    </a>
                   </th>
                 ))}
               </tr>
@@ -142,13 +144,15 @@ export default function ComparePage({ nitpicks: serverNitpicks }) {
                 </td>
                 {selectedListings.map(listing => (
                   <td key={listing.id} style={{ textAlign: 'center' }}>
-                    <img
-                      src={listing.image}
-                      alt={listing.title}
-                      className={styles.thumbnail}
-                      style={{ display: 'inline-block', width: '100px', height: 'auto' }}
-                    />
-                  </td>   
+                    <a href={listing.url} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={listing.image}
+                        alt={listing.title}
+                        className={styles.thumbnail}
+                        style={{ display: 'inline-block', width: '100px', height: 'auto' }}
+                      />
+                    </a>
+                  </td>
                 ))}
               </tr>
               <tr>
