@@ -1,11 +1,11 @@
 import React, { ReactNode } from 'react';
-import Link from 'next/link';
+//import Link from 'next/link';
 
 import {
   Body,
   Container,
   Hr,
-  Img,
+  //Img,
   Section,
   Tailwind,
   Text,
